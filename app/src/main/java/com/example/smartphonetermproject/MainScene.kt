@@ -1,5 +1,6 @@
 package com.example.smartphonetermproject
 
+import kr.ac.tukorea.ge.spgp2026.a2dg.objects.VertScrollBackground
 import kr.ac.tukorea.ge.spgp2026.a2dg.scene.Scene
 import kr.ac.tukorea.ge.spgp2026.a2dg.scene.World
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
@@ -13,5 +14,14 @@ class MainScene(gctx: GameContext) : Scene(gctx) {
         CONTROLLER,
         UI,
     }
-    override val world = World(Layer.entries.toTypedArray())
+
+    private val background = VertScrollBackground(gctx, R.mipmap.sky_bg, BACKGROUND_SPEED)
+
+    override val world = World(Layer.entries.toTypedArray()).apply {
+        add(background, Layer.BACKGROUND)
+    }
+
+    companion object {
+        private const val BACKGROUND_SPEED = 80f
+    }
 }
