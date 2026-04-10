@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SmartphoneTermProject"
 include(":app")
- 
+include(":a2dg")
