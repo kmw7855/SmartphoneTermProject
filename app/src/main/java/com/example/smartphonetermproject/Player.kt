@@ -37,13 +37,8 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     private var targetX = x
     private var targetY = y
 
-    init {
-        syncDstRect()
-    }
+    private var fireCooldown = 0f
 
-    fun decreaseLife(damage: Int) {
-        life -= damage
-    }
 
     override fun update(gctx: GameContext) {
         val step = SPEED * gctx.frameTime
@@ -60,7 +55,28 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         x = x.coerceIn(minX, maxX)
         y = y.coerceIn(minY, maxY)
         syncDstRect()
+        fireBullet(gctx)
     }
+
+    private fun fireBullet(gctx: GameContext) {
+        fireCooldown -= gctx.frameTime
+        if (fireCooldown > 0f) return
+        fireCooldown = FIRE_INTERVAL
+
+        val scene = gctx.scene as? MainScene ?: return
+        val bullet = Bullet.get(gctx, x, y - PLAYER_HEIGHT / 2f - BULLET_OFFSET)
+        scene.world.add(bullet, MainScene.Layer.BULLET)
+    }
+
+    init {
+        syncDstRect()
+    }
+
+    fun decreaseLife(damage: Int) {
+        life -= damage
+    }
+
+
 
     fun onTouchEvent(event: MotionEvent): Boolean {
         val pt = gctx.metrics.fromScreen(event.x, event.y)
@@ -80,5 +96,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         const val PLAYER_HEIGHT = 200f
         const val MAX_LIFE = 10
         private const val COLLISION_INSET_RATIO = 0.8f
+        const val FIRE_INTERVAL = 0.3f
+        const val BULLET_OFFSET = 8f
     }
 }
