@@ -31,13 +31,24 @@ open class MainScene(
     private var bossEntered = isBossStage
 
     private val enemyGenerator = EnemyGenerator(gctx)
+    private val collisionChecker = CollisionChecker(gctx)
+
+    private val scoreLabel = ScoreLabel(gctx)
+
+    var score = 0
+        private set
+    fun addScore(amount: Int) {
+        score += amount
+    }
 
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
         add(player, Layer.PLAYER)
         add(stars, Layer.STARS)
         if (!isBossStage) add(enemyGenerator, Layer.CONTROLLER)
+        add(scoreLabel, Layer.UI)
         add(bossTimerHud, Layer.UI)
+        add(collisionChecker, Layer.CONTROLLER)
     }
 
     override fun update(gctx: GameContext) {
