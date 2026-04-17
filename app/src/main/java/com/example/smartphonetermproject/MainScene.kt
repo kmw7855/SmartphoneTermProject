@@ -51,6 +51,8 @@ open class MainScene(
         return player.onTouchEvent(event)
     }
 
+    override val clipsRect = true
+    
     companion object {
         private const val BACKGROUND_SPEED = 80f
         private const val BOSS_ENTER_TIME = 10f
