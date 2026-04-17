@@ -17,10 +17,12 @@ open class MainScene(
         BULLET,
         ENEMY,
         CONTROLLER,
+        STARS,
         UI,
     }
 
     private val background = VertScrollBackground(gctx, backgroundResId, BACKGROUND_SPEED)
+    private val stars = VertScrollBackground(gctx, R.mipmap.sky_star, STARS_SPEED)
     val player = Player(gctx)
     private val bossTimerHud = BossTimerHud(gctx)
 
@@ -31,6 +33,7 @@ open class MainScene(
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
         add(player, Layer.PLAYER)
+        add(stars, Layer.STARS)
         add(bossTimerHud, Layer.UI)
     }
 
@@ -51,5 +54,6 @@ open class MainScene(
     companion object {
         private const val BACKGROUND_SPEED = 80f
         private const val BOSS_ENTER_TIME = 10f
+        private const val STARS_SPEED = 150f
     }
 }
