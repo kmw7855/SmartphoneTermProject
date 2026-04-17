@@ -23,9 +23,9 @@ class Enemy private constructor(
         val hitDamage: Int,
     ) {
 
-        SUICIDE(R.mipmap.enemy_suicide, 130f, 130f, 1, 280f, 10, 2),
-        RANGED(R.mipmap.enemy_ranged, 155f, 155f, 2, 150f, 20, 1),
-        SPLIT(R.mipmap.enemy_split, 120f, 120f, 3, 220f, 30, 1),
+        SUICIDE(R.mipmap.enemy_suicide, 130f, 130f, 1, 280f, 10, 5),
+        RANGED(R.mipmap.enemy_ranged, 155f, 155f, 2, 150f, 20, 5),
+        SPLIT(R.mipmap.enemy_split, 120f, 120f, 3, 220f, 30, 5),
     }
 
     val score: Int get() = type.score

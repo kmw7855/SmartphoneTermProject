@@ -34,6 +34,7 @@ open class MainScene(
     private val collisionChecker = CollisionChecker(gctx)
 
     private val scoreLabel = ScoreLabel(gctx)
+    private val playerHpHud = PlayerHpHud(gctx)
 
     var score = 0
         private set
@@ -49,6 +50,7 @@ open class MainScene(
         add(scoreLabel, Layer.UI)
         add(bossTimerHud, Layer.UI)
         add(collisionChecker, Layer.CONTROLLER)
+        add(playerHpHud, Layer.UI)
     }
 
     override fun update(gctx: GameContext) {
