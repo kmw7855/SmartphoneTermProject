@@ -30,10 +30,13 @@ open class MainScene(
         private set
     private var bossEntered = isBossStage
 
+    private val enemyGenerator = EnemyGenerator(gctx)
+
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
         add(player, Layer.PLAYER)
         add(stars, Layer.STARS)
+        if (!isBossStage) add(enemyGenerator, Layer.CONTROLLER)
         add(bossTimerHud, Layer.UI)
     }
 
