@@ -16,6 +16,7 @@ open class MainScene(
         PLAYER,
         BULLET,
         ENEMY,
+        ENEMY_BULLET,
         CONTROLLER,
         STARS,
         UI,
