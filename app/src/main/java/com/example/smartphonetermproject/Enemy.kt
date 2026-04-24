@@ -8,7 +8,9 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IRecyclable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.Sprite
 import kr.ac.tukorea.ge.spgp2026.a2dg.util.Gauge
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
+import kotlin.math.cos
 import kotlin.math.hypot
+import kotlin.math.sin
 import kotlin.random.Random
 
 class Enemy private constructor(
@@ -27,6 +29,7 @@ class Enemy private constructor(
         SUICIDE(R.mipmap.enemy_suicide, 130f, 130f, 1, 280f, 10, 2),
         RANGED(R.mipmap.enemy_ranged, 155f, 155f, 2, 150f, 20, 1),
         SPLIT(R.mipmap.enemy_split, 120f, 120f, 3, 220f, 30, 1),
+        SPLIT_MINION(R.mipmap.enemy_split, 75f, 75f, 1, 240f, 10, 1),
     }
 
     private enum class RangedPhase { APPROACHING, ATTACKING }
@@ -56,13 +59,21 @@ class Enemy private constructor(
     private var rangedFireCooldown = 0f
     private var rangedStopRatio = 0f
 
+    private var minionLockDelay = 0f
+    private var minionLocked = false
+
     init {
         if (sharedGauge == null) {
             sharedGauge = Gauge(GAUGE_THICKNESS, GAUGE_FG_COLOR, GAUGE_BG_COLOR)
         }
     }
 
-    fun init(x: Float, type: Type): Enemy {
+    fun init(
+        x: Float,
+        type: Type,
+        startY: Float? = null,
+        angleFromVerticalDeg: Float = 0f,
+    ): Enemy {
         this.type = type
         this.bitmap = gctx.res.getBitmap(type.resId)
         this.width = type.width
@@ -71,9 +82,7 @@ class Enemy private constructor(
         this.maxLife = type.hp
         this.speed = type.speed
         this.x = x
-        this.y = -type.height / 2f
-        syncDstRect()
-        updateCollisionRect()
+        this.y = startY ?: -type.height / 2f
         diving = false
         diveVx = 0f
         diveVy = 0f
@@ -81,14 +90,28 @@ class Enemy private constructor(
         rangedFireCooldown = 0f
         rangedStopRatio = RANGED_STOP_RATIO_MIN +
                 Random.nextFloat() * (RANGED_STOP_RATIO_MAX - RANGED_STOP_RATIO_MIN)
+        minionLockDelay = 0f
+        minionLocked = false
+        if (type == Type.SPLIT_MINION) {
+            val rad = Math.toRadians(angleFromVerticalDeg.toDouble())
+            diveVx = sin(rad).toFloat() * speed
+            diveVy = cos(rad).toFloat() * speed
+            diving = true
+            minionLockDelay = MINION_LOCK_DELAY
+        }
+        syncDstRect()
+        updateCollisionRect()
         return this
     }
 
     override fun update(gctx: GameContext) {
         when (type) {
-            Type.SUICIDE -> updateSuicide(gctx)
+            Type.SUICIDE, Type.SPLIT -> updateSuicide(gctx)
             Type.RANGED -> updateRanged(gctx)
-            Type.SPLIT -> updateStraight(gctx)
+            Type.SPLIT_MINION -> {
+                moveByDiveVelocity(gctx)
+                updateMinionLock(gctx)
+            }
         }
         syncDstRect()
         updateCollisionRect()
@@ -100,10 +123,6 @@ class Enemy private constructor(
             val scene = gctx.scene as? MainScene ?: return
             scene.world.remove(this, MainScene.Layer.ENEMY)
         }
-    }
-
-    private fun updateStraight(gctx: GameContext) {
-        y += speed * gctx.frameTime
     }
 
     private fun updateSuicide(gctx: GameContext) {
@@ -166,6 +185,34 @@ class Enemy private constructor(
         scene.world.add(bullet, MainScene.Layer.ENEMY_BULLET)
     }
 
+    private fun moveByDiveVelocity(gctx: GameContext) {
+        x += diveVx * gctx.frameTime
+        y += diveVy * gctx.frameTime
+    }
+
+    private fun updateMinionLock(gctx: GameContext) {
+        if (minionLocked) return
+        minionLockDelay -= gctx.frameTime
+        if (minionLockDelay <= 0f) {
+            lockDiveTarget(gctx)
+            minionLocked = true
+        }
+    }
+
+    fun onSplitDeath(scene: MainScene) {
+        if (type != Type.SPLIT) return
+        for (angleDeg in MINION_ANGLES) {
+            val minion = get(
+                gctx,
+                x = x,
+                type = Type.SPLIT_MINION,
+                startY = y,
+                angleFromVerticalDeg = angleDeg,
+            )
+            scene.world.add(minion, MainScene.Layer.ENEMY)
+        }
+    }
+
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
         val gauge = sharedGauge ?: return
@@ -200,11 +247,20 @@ class Enemy private constructor(
         private const val RANGED_STOP_RATIO_MAX = 0.35f
         private const val RANGED_FIRE_INTERVAL = 1.2f
         private const val ENEMY_BULLET_OFFSET = 8f
+        private const val MINION_LOCK_DELAY = 0.3f
+        private val MINION_ANGLES = listOf(-30f, 30f)
 
-        fun get(gctx: GameContext, x: Float, type: Type): Enemy {
-            val scene = gctx.scene as? MainScene ?: return Enemy(gctx).init(x, type)
+        fun get(
+            gctx: GameContext,
+            x: Float,
+            type: Type,
+            startY: Float? = null,
+            angleFromVerticalDeg: Float = 0f,
+        ): Enemy {
+            val scene = gctx.scene as? MainScene
+                ?: return Enemy(gctx).init(x, type, startY, angleFromVerticalDeg)
             val enemy = scene.world.obtain(Enemy::class.java) ?: Enemy(gctx)
-            return enemy.init(x, type)
+            return enemy.init(x, type, startY, angleFromVerticalDeg)
         }
     }
 }

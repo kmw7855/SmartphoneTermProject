@@ -33,6 +33,7 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
                     scene.world.remove(bullet, MainScene.Layer.BULLET)
                     enemy.decreaseLife(Bullet.DAMAGE)
                     if (enemy.dead) {
+                        enemy.onSplitDeath(scene)
                         scene.world.remove(enemy, MainScene.Layer.ENEMY)
                         scene.addScore(enemy.score)
                     }
