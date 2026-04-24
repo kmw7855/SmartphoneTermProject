@@ -8,6 +8,7 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IRecyclable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.Sprite
 import kr.ac.tukorea.ge.spgp2026.a2dg.util.Gauge
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
+import kotlin.math.hypot
 
 class Enemy private constructor(
     private val gctx: GameContext,
@@ -22,10 +23,9 @@ class Enemy private constructor(
         val score: Int,
         val hitDamage: Int,
     ) {
-
-        SUICIDE(R.mipmap.enemy_suicide, 130f, 130f, 1, 280f, 10, 5),
-        RANGED(R.mipmap.enemy_ranged, 155f, 155f, 2, 150f, 20, 5),
-        SPLIT(R.mipmap.enemy_split, 120f, 120f, 3, 220f, 30, 5),
+        SUICIDE(R.mipmap.enemy_suicide, 130f, 130f, 1, 280f, 10, 2),
+        RANGED(R.mipmap.enemy_ranged, 155f, 155f, 2, 150f, 20, 1),
+        SPLIT(R.mipmap.enemy_split, 120f, 120f, 3, 220f, 30, 1),
     }
 
     val score: Int get() = type.score
@@ -45,6 +45,10 @@ class Enemy private constructor(
     override var y = 0f
     override val collisionRect = RectF()
 
+    private var diving = false
+    private var diveVx = 0f
+    private var diveVy = 0f
+
     init {
         if (sharedGauge == null) {
             sharedGauge = Gauge(GAUGE_THICKNESS, GAUGE_FG_COLOR, GAUGE_BG_COLOR)
@@ -63,17 +67,55 @@ class Enemy private constructor(
         this.y = -type.height / 2f
         syncDstRect()
         updateCollisionRect()
+        diving = false
+        diveVx = 0f
+        diveVy = 0f
         return this
     }
 
     override fun update(gctx: GameContext) {
-        y += speed * gctx.frameTime
+        when (type) {
+            Type.SUICIDE -> updateSuicide(gctx)
+            Type.RANGED, Type.SPLIT -> updateStraight(gctx)
+        }
         syncDstRect()
         updateCollisionRect()
-        if (y - height / 2f > gctx.metrics.height) {
+
+        val outBottom = y - height / 2f > gctx.metrics.height
+        val outRight = x - width / 2f > gctx.metrics.width
+        val outLeft = x + width / 2f < 0f
+        if (outBottom || outRight || outLeft) {
             val scene = gctx.scene as? MainScene ?: return
             scene.world.remove(this, MainScene.Layer.ENEMY)
         }
+    }
+
+    private fun updateStraight(gctx: GameContext) {
+        y += speed * gctx.frameTime
+    }
+
+    private fun updateSuicide(gctx: GameContext) {
+        if (!diving) {
+            y += speed * gctx.frameTime
+            if (y >= gctx.metrics.height * SUICIDE_LOCK_RATIO) {
+                lockDiveTarget(gctx)
+            }
+        } else {
+            x += diveVx * gctx.frameTime
+            y += diveVy * gctx.frameTime
+        }
+    }
+
+    private fun lockDiveTarget(gctx: GameContext) {
+        val player = (gctx.scene as? MainScene)?.player ?: return
+        val dx = player.x - x
+        val dy = player.y - y
+        val len = hypot(dx, dy)
+        if (len < 1f) return
+        val diveSpeed = speed * SUICIDE_DIVE_MUL
+        diveVx = dx / len * diveSpeed
+        diveVy = dy / len * diveSpeed
+        diving = true
     }
 
     override fun draw(canvas: Canvas) {
@@ -104,6 +146,8 @@ class Enemy private constructor(
         private val GAUGE_BG_COLOR = Color.argb(180, 0, 0, 0)
         private const val GAUGE_OFFSET_FROM_TOP = 8f
         private const val COLLISION_INSET_RATIO = 0.8f
+        private const val SUICIDE_LOCK_RATIO = 0.4f
+        private const val SUICIDE_DIVE_MUL = 1.6f
 
         fun get(gctx: GameContext, x: Float, type: Type): Enemy {
             val scene = gctx.scene as? MainScene ?: return Enemy(gctx).init(x, type)

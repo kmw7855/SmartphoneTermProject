@@ -17,7 +17,7 @@ class EnemyGenerator(private val gctx: GameContext) : IGameObject {
 
     private fun spawn() {
         val scene = gctx.scene as? MainScene ?: return
-        val type = Enemy.Type.entries.random()
+        val type = Enemy.Type.SUICIDE
         val margin = type.width / 2f
         val x = margin + Random.nextFloat() * (gctx.metrics.width - 2 * margin)
         val enemy = Enemy.get(gctx, x, type)
