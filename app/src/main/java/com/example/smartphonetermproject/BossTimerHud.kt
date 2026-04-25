@@ -56,7 +56,7 @@ class BossTimerHud(private val gctx: GameContext) : IGameObject {
     companion object {
         private const val BOX_WIDTH = 320f
         private const val BOX_HEIGHT = 70f
-        private const val BOX_TOP = -170f
+        private const val BOX_TOP = 40f
         private const val CORNER_RADIUS = 18f
         private const val TEXT_SIZE = 50f
         private const val BOSS_LABEL = "BOSS STAGE"

@@ -30,8 +30,8 @@ class EnemyBullet private constructor(
                 _collisionRect.setEmpty()
                 return _collisionRect
             }
-            val halfW = width * COLLISION_INSET_RATIO / 2f
-            val halfH = height * COLLISION_INSET_RATIO / 2f
+            val halfW = width * COLLISION_INSET_RATIO_X / 2f
+            val halfH = height * COLLISION_INSET_RATIO_Y / 2f
             _collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
             return _collisionRect
         }
@@ -96,14 +96,16 @@ class EnemyBullet private constructor(
     override fun onRecycle() {}
 
     companion object {
-        const val ENEMY_BULLET_WIDTH = 80f
-        const val ENEMY_BULLET_HEIGHT = 120f
+        const val ENEMY_BULLET_WIDTH = 500f
+        const val ENEMY_BULLET_HEIGHT = 550f
         const val SPEED = 700f
         const val DAMAGE = 1
-        private const val COLLISION_INSET_RATIO = 0.8f
+
+        private const val COLLISION_INSET_RATIO_X = 0.07f
+        private const val COLLISION_INSET_RATIO_Y = 0.2f
         private var sharedHitBitmap: Bitmap? = null
         private const val HIT_DURATION = 0.1f
-        private const val HIT_SIZE = 110f
+        private const val HIT_SIZE = 200f
 
         fun get(
             gctx: GameContext,

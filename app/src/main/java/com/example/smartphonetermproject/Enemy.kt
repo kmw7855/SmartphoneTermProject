@@ -27,10 +27,10 @@ class Enemy private constructor(
         val score: Int,
         val hitDamage: Int,
     ) {
-        SUICIDE(R.mipmap.enemy_suicide, 130f, 130f, 1, 280f, 10, 2),
-        RANGED(R.mipmap.enemy_ranged, 155f, 155f, 2, 150f, 20, 1),
-        SPLIT(R.mipmap.enemy_split, 120f, 120f, 3, 220f, 30, 1),
-        SPLIT_MINION(R.mipmap.enemy_split, 75f, 75f, 1, 240f, 10, 1),
+        SUICIDE(R.mipmap.enemy_suicide, 180f, 180f, 1, 280f, 10, 2),
+        RANGED(R.mipmap.enemy_ranged, 135f, 135f, 2, 150f, 20, 1),
+        SPLIT(R.mipmap.enemy_split, 230f, 230f, 3, 220f, 30, 1),
+        SPLIT_MINION(R.mipmap.enemy_split, 105f, 105f, 1, 240f, 10, 1),
     }
 
     private enum class RangedPhase { APPROACHING, ATTACKING }
@@ -283,7 +283,7 @@ class Enemy private constructor(
         private val GAUGE_FG_COLOR = Color.GREEN
         private val GAUGE_BG_COLOR = Color.argb(180, 0, 0, 0)
         private const val GAUGE_OFFSET_FROM_TOP = 8f
-        private const val COLLISION_INSET_RATIO = 0.8f
+        private const val COLLISION_INSET_RATIO = 0.6f
         private const val SUICIDE_LOCK_RATIO = 0.4f
         private const val SUICIDE_DIVE_MUL = 1.6f
         private const val RANGED_STOP_RATIO_MIN = 0.22f
