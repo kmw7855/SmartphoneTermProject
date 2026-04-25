@@ -17,7 +17,7 @@ class EnemyGenerator(private val gctx: GameContext) : IGameObject {
 
     private fun spawn() {
         val scene = gctx.scene as? MainScene ?: return
-        val type = Enemy.Type.SPLIT
+        val type = SPAWNABLE_TYPES.random()
         val margin = type.width / 2f
         val x = margin + Random.nextFloat() * (gctx.metrics.width - 2 * margin)
         val enemy = Enemy.get(gctx, x, type)
@@ -28,5 +28,6 @@ class EnemyGenerator(private val gctx: GameContext) : IGameObject {
 
     companion object {
         const val GEN_INTERVAL = 1.0f
+        private val SPAWNABLE_TYPES = Enemy.Type.entries.filter { it != Enemy.Type.SPLIT_MINION }
     }
 }

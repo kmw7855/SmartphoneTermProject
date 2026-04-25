@@ -72,7 +72,7 @@ open class MainScene(
     
     companion object {
         private const val BACKGROUND_SPEED = 80f
-        private const val BOSS_ENTER_TIME = 10f
+        private const val BOSS_ENTER_TIME = 60f
         private const val STARS_SPEED = 150f
     }
 }

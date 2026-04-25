@@ -1,5 +1,6 @@
 package com.example.smartphonetermproject
 
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.RectF
@@ -62,9 +63,18 @@ class Enemy private constructor(
     private var minionLockDelay = 0f
     private var minionLocked = false
 
+    private var dying = false
+    private var dyingTime = 0f
+    private val dieRect = RectF()
+
     init {
         if (sharedGauge == null) {
             sharedGauge = Gauge(GAUGE_THICKNESS, GAUGE_FG_COLOR, GAUGE_BG_COLOR)
+        }
+        if (sharedDieBitmaps.isEmpty()) {
+            for (t in Type.entries) {
+                sharedDieBitmaps[t] = gctx.res.getBitmap(dieResIdFor(t))
+            }
         }
     }
 
@@ -92,6 +102,8 @@ class Enemy private constructor(
                 Random.nextFloat() * (RANGED_STOP_RATIO_MAX - RANGED_STOP_RATIO_MIN)
         minionLockDelay = 0f
         minionLocked = false
+        dying = false
+        dyingTime = 0f
         if (type == Type.SPLIT_MINION) {
             val rad = Math.toRadians(angleFromVerticalDeg.toDouble())
             diveVx = sin(rad).toFloat() * speed
@@ -105,6 +117,14 @@ class Enemy private constructor(
     }
 
     override fun update(gctx: GameContext) {
+        if (dying) {
+            dyingTime -= gctx.frameTime
+            if (dyingTime <= 0f) {
+                val scene = gctx.scene as? MainScene ?: return
+                scene.world.remove(this, MainScene.Layer.ENEMY)
+            }
+            return
+        }
         when (type) {
             Type.SUICIDE, Type.SPLIT -> updateSuicide(gctx)
             Type.RANGED -> updateRanged(gctx)
@@ -123,6 +143,16 @@ class Enemy private constructor(
             val scene = gctx.scene as? MainScene ?: return
             scene.world.remove(this, MainScene.Layer.ENEMY)
         }
+    }
+
+    private fun updateCollisionRect() {
+        if (dying) {
+            collisionRect.setEmpty()
+            return
+        }
+        val halfW = width * COLLISION_INSET_RATIO / 2f
+        val halfH = height * COLLISION_INSET_RATIO / 2f
+        collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
     }
 
     private fun updateSuicide(gctx: GameContext) {
@@ -199,21 +229,40 @@ class Enemy private constructor(
         }
     }
 
-    fun onSplitDeath(scene: MainScene) {
-        if (type != Type.SPLIT) return
-        for (angleDeg in MINION_ANGLES) {
-            val minion = get(
-                gctx,
-                x = x,
-                type = Type.SPLIT_MINION,
-                startY = y,
-                angleFromVerticalDeg = angleDeg,
-            )
-            scene.world.add(minion, MainScene.Layer.ENEMY)
+    fun startDying(scene: MainScene) {
+        if (dying) return
+        dying = true
+        dyingTime = DIE_DURATION
+        updateCollisionRect()
+        if (type == Type.SPLIT) {
+            for (angleDeg in MINION_ANGLES) {
+                val minion = get(
+                    gctx,
+                    x = x,
+                    type = Type.SPLIT_MINION,
+                    startY = y,
+                    angleFromVerticalDeg = angleDeg,
+                )
+                scene.world.add(minion, MainScene.Layer.ENEMY)
+            }
         }
     }
 
+    private fun dieResIdFor(type: Type) = when (type) {
+        Type.SUICIDE -> R.mipmap.vfx_suicide_die
+        Type.RANGED -> R.mipmap.vfx_ranged_die
+        Type.SPLIT -> R.mipmap.vfx_split_burst
+        Type.SPLIT_MINION -> R.mipmap.vfx_minion_die
+    }
+
     override fun draw(canvas: Canvas) {
+        if (dying) {
+            val bmp = sharedDieBitmaps[type] ?: return
+            val size = width * DIE_SIZE_MUL
+            dieRect.set(x - size / 2f, y - size / 2f, x + size / 2f, y + size / 2f)
+            canvas.drawBitmap(bmp, null, dieRect, null)
+            return
+        }
         super.draw(canvas)
         val gauge = sharedGauge ?: return
         val gaugeWidth = width * 0.7f
@@ -224,12 +273,6 @@ class Enemy private constructor(
 
     fun decreaseLife(damage: Int) {
         life -= damage
-    }
-
-    private fun updateCollisionRect() {
-        val halfW = width * COLLISION_INSET_RATIO / 2f
-        val halfH = height * COLLISION_INSET_RATIO / 2f
-        collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
     }
 
     override fun onRecycle() {}
@@ -249,6 +292,9 @@ class Enemy private constructor(
         private const val ENEMY_BULLET_OFFSET = 8f
         private const val MINION_LOCK_DELAY = 0.3f
         private val MINION_ANGLES = listOf(-30f, 30f)
+        private val sharedDieBitmaps = mutableMapOf<Type, Bitmap>()
+        private const val DIE_DURATION = 0.1f
+        private const val DIE_SIZE_MUL = 1.5f
 
         fun get(
             gctx: GameContext,

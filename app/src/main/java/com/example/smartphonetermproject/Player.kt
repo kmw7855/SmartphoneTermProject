@@ -13,14 +13,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     override var x = gctx.metrics.width / 2f
     override var y = gctx.metrics.height - PLAYER_HEIGHT * 1.5f
 
-    private val _collisionRect = RectF()
-    override val collisionRect: RectF
-        get() {
-            val halfW = width * COLLISION_INSET_RATIO / 2f
-            val halfH = height * COLLISION_INSET_RATIO / 2f
-            _collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
-            return _collisionRect
-        }
+    override val collisionRect = RectF()
 
     var life = MAX_LIFE
         private set
@@ -39,6 +32,10 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
 
     private var fireCooldown = 0f
 
+    init {
+        syncDstRect()
+        updateCollisionRect()
+    }
 
     override fun update(gctx: GameContext) {
         val step = SPEED * gctx.frameTime
@@ -55,7 +52,14 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         x = x.coerceIn(minX, maxX)
         y = y.coerceIn(minY, maxY)
         syncDstRect()
+        updateCollisionRect()
         fireBullet(gctx)
+    }
+
+    private fun updateCollisionRect() {
+        val halfW = width * COLLISION_INSET_RATIO / 2f
+        val halfH = height * COLLISION_INSET_RATIO / 2f
+        collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
     }
 
     private fun fireBullet(gctx: GameContext) {
@@ -68,15 +72,9 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         scene.world.add(bullet, MainScene.Layer.BULLET)
     }
 
-    init {
-        syncDstRect()
-    }
-
     fun decreaseLife(damage: Int) {
         life -= damage
     }
-
-
 
     fun onTouchEvent(event: MotionEvent): Boolean {
         val pt = gctx.metrics.fromScreen(event.x, event.y)
@@ -95,7 +93,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         const val PLAYER_WIDTH = 200f
         const val PLAYER_HEIGHT = 200f
         const val MAX_LIFE = 10
-        private const val COLLISION_INSET_RATIO = 0.8f
+        private const val COLLISION_INSET_RATIO = 0.6f
         const val FIRE_INTERVAL = 0.3f
         const val BULLET_OFFSET = 8f
     }

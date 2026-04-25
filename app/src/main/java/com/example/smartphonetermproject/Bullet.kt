@@ -1,5 +1,7 @@
 package com.example.smartphonetermproject
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.RectF
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IBoxCollidable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IRecyclable
@@ -14,9 +16,17 @@ class Bullet private constructor(
     override var x = 0f
     override var y = 0f
 
+    private var hitting = false
+    private var hitTime = 0f
+    private val hitRect = RectF()
+
     private val _collisionRect = RectF()
     override val collisionRect: RectF
         get() {
+            if (hitting) {
+                _collisionRect.setEmpty()
+                return _collisionRect
+            }
             val halfW = width * COLLISION_INSET_RATIO / 2f
             val halfH = height * COLLISION_INSET_RATIO / 2f
             _collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
@@ -25,22 +35,51 @@ class Bullet private constructor(
 
     init {
         syncDstRect()
+        if (sharedHitBitmap == null) {
+            sharedHitBitmap = gctx.res.getBitmap(R.mipmap.vfx_player_hit)
+        }
     }
 
     fun init(startX: Float, startY: Float): Bullet {
         x = startX
         y = startY
+        hitting = false
+        hitTime = 0f
         syncDstRect()
         return this
     }
 
     override fun update(gctx: GameContext) {
+        if (hitting) {
+            hitTime -= gctx.frameTime
+            if (hitTime <= 0f) {
+                val scene = gctx.scene as? MainScene ?: return
+                scene.world.remove(this, MainScene.Layer.BULLET)
+            }
+            return
+        }
         y -= SPEED * gctx.frameTime
         syncDstRect()
         if (y + height / 2f < 0f) {
             val scene = gctx.scene as? MainScene ?: return
             scene.world.remove(this, MainScene.Layer.BULLET)
         }
+    }
+
+    override fun draw(canvas: Canvas) {
+        if (hitting) {
+            val bmp = sharedHitBitmap ?: return
+            hitRect.set(x - HIT_SIZE / 2f, y - HIT_SIZE / 2f, x + HIT_SIZE / 2f, y + HIT_SIZE / 2f)
+            canvas.drawBitmap(bmp, null, hitRect, null)
+            return
+        }
+        super.draw(canvas)
+    }
+
+    fun startHitting() {
+        if (hitting) return
+        hitting = true
+        hitTime = HIT_DURATION
     }
 
     override fun onRecycle() {}
@@ -51,6 +90,9 @@ class Bullet private constructor(
         const val SPEED = 1500f
         const val DAMAGE = 1
         private const val COLLISION_INSET_RATIO = 0.8f
+        private var sharedHitBitmap: Bitmap? = null
+        private const val HIT_DURATION = 0.1f
+        private const val HIT_SIZE = 110f
 
         fun get(gctx: GameContext, x: Float, y: Float): Bullet {
             val scene = gctx.scene as? MainScene ?: return Bullet(gctx).init(x, y)

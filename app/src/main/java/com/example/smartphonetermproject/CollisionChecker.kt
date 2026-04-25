@@ -19,7 +19,7 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
 
             if (player.collidesWith(enemy)) {
                 player.decreaseLife(enemy.hitDamage)
-                scene.world.remove(enemy, MainScene.Layer.ENEMY)
+                enemy.startDying(scene)
                 if (player.dead) {
                     triggerGameOver()
                     return
@@ -30,13 +30,24 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
             scene.world.forEachReversedAt(MainScene.Layer.BULLET) { bulletObject ->
                 val bullet = bulletObject as? Bullet ?: return@forEachReversedAt
                 if (bullet.collidesWith(enemy)) {
-                    scene.world.remove(bullet, MainScene.Layer.BULLET)
+                    bullet.startHitting()
                     enemy.decreaseLife(Bullet.DAMAGE)
                     if (enemy.dead) {
-                        enemy.onSplitDeath(scene)
-                        scene.world.remove(enemy, MainScene.Layer.ENEMY)
+                        enemy.startDying(scene)
                         scene.addScore(enemy.score)
                     }
+                }
+            }
+        }
+
+        scene.world.forEachReversedAt(MainScene.Layer.ENEMY_BULLET) { ebObject ->
+            val enemyBullet = ebObject as? EnemyBullet ?: return@forEachReversedAt
+            if (enemyBullet.collidesWith(player)) {
+                enemyBullet.startHitting()
+                player.decreaseLife(EnemyBullet.DAMAGE)
+                if (player.dead) {
+                    triggerGameOver()
+                    return
                 }
             }
         }
