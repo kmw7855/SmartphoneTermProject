@@ -51,6 +51,14 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
                 }
             }
         }
+
+        scene.world.forEachReversedAt(MainScene.Layer.EXP_ORB) { orbObject ->
+            val orb = orbObject as? ExpOrb ?: return@forEachReversedAt
+            if (orb.collidesWith(player)) {
+                player.gainExp(ExpOrb.VALUE)
+                scene.world.remove(orb, MainScene.Layer.EXP_ORB)
+            }
+        }
     }
 
     override fun draw(canvas: Canvas) {}

@@ -234,6 +234,10 @@ class Enemy private constructor(
         dying = true
         dyingTime = DIE_DURATION
         updateCollisionRect()
+        if (type != Type.SPLIT) {
+            val orb = ExpOrb.get(gctx, x, y)
+            scene.world.add(orb, MainScene.Layer.EXP_ORB)
+        }
         if (type == Type.SPLIT) {
             for (angleDeg in MINION_ANGLES) {
                 val minion = get(

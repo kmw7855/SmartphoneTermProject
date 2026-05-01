@@ -19,6 +19,7 @@ open class MainScene(
         ENEMY_BULLET,
         CONTROLLER,
         STARS,
+        EXP_ORB,
         UI,
     }
 
@@ -43,6 +44,8 @@ open class MainScene(
         score += amount
     }
 
+    private val expLabel = ExpLabel(gctx)
+
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
         add(player, Layer.PLAYER)
@@ -52,6 +55,7 @@ open class MainScene(
         add(bossTimerHud, Layer.UI)
         add(collisionChecker, Layer.CONTROLLER)
         add(playerHpHud, Layer.UI)
+        add(expLabel, Layer.UI)
     }
 
     override fun update(gctx: GameContext) {

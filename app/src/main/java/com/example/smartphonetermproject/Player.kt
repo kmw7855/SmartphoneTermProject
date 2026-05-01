@@ -32,6 +32,21 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
 
     private var fireCooldown = 0f
 
+    var exp = 0
+        private set
+    var level = 1
+        private set
+    val maxExp: Int
+        get() = LEVEL_UP_EXP_BASE * level
+
+    fun gainExp(amount: Int) {
+        exp += amount
+        while (exp >= maxExp) {
+            exp -= maxExp
+            level++
+        }
+    }
+
     init {
         syncDstRect()
         updateCollisionRect()
@@ -96,5 +111,6 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         private const val COLLISION_INSET_RATIO = 0.6f
         const val FIRE_INTERVAL = 0.3f
         const val BULLET_OFFSET = 8f
+        const val LEVEL_UP_EXP_BASE = 5
     }
 }
