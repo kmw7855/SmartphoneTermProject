@@ -55,3 +55,32 @@ object ShotgunWeapon : Weapon() {
         }
     }
 }
+
+object HomingWeapon : Weapon() {
+    override val displayName = "유도 미사일"
+    override val fireInterval = 0.8f
+
+    override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
+        val HomingCount = if (grade == WeaponGrade.EPIC) 2 else 1
+        val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
+        val (power, isCrit) = player.calculatePower()
+        for (i in 0 until HomingCount) {
+            val offsetX = if (HomingCount == 2) (i * 2 - 1) * 30f else 0f
+            scene.world.add(
+                Bullet.get(
+                    gctx, player.x + offsetX, muzzleY, power, isCrit,
+                    vx = 0f, vy = -Homing_INITIAL_SPEED,
+                    spriteResId = R.mipmap.weapon_homing,
+                    hitVfxResId = R.mipmap.vfx_homing_hit,
+                    turnRate = Homing_TURN_RATE,
+                    targetSpeed = Homing_TARGET_SPEED,
+                ),
+                MainScene.Layer.BULLET,
+            )
+        }
+    }
+
+    private const val Homing_INITIAL_SPEED = 600f
+    private const val Homing_TARGET_SPEED = 1100f
+    private const val Homing_TURN_RATE = 6f
+}

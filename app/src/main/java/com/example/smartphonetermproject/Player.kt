@@ -44,7 +44,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     var fireRateMul: Float = 1f
     var critRate: Float = 0f
 
-    var currentWeapon: Weapon = ShotgunWeapon
+    var currentWeapon: Weapon = HomingWeapon
     var weaponGrade: WeaponGrade = WeaponGrade.RARE
 
     fun gainExp(amount: Int) {
