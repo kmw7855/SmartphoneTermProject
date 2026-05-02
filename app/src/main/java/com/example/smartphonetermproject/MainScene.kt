@@ -60,6 +60,12 @@ open class MainScene(
 
     override fun update(gctx: GameContext) {
         super.update(gctx)
+
+        if (player.exp >= player.maxExp) {
+            LevelUpScene(gctx, this).push()
+            return
+        }
+
         if (bossEntered) return
         elapsedSec += gctx.frameTime
         if (elapsedSec >= BOSS_ENTER_TIME) {
@@ -73,7 +79,7 @@ open class MainScene(
     }
 
     override val clipsRect = true
-    
+
     companion object {
         private const val BACKGROUND_SPEED = 80f
         private const val BOSS_ENTER_TIME = 60f
