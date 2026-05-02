@@ -16,6 +16,11 @@ class Bullet private constructor(
     override var x = 0f
     override var y = 0f
 
+    var power: Int = DAMAGE
+        private set
+    var isCrit: Boolean = false
+        private set
+
     private var hitting = false
     private var hitTime = 0f
     private val hitRect = RectF()
@@ -40,9 +45,11 @@ class Bullet private constructor(
         }
     }
 
-    fun init(startX: Float, startY: Float): Bullet {
+    fun init(startX: Float, startY: Float, power: Int = DAMAGE, isCrit: Boolean = false): Bullet {
         x = startX
         y = startY
+        this.power = power
+        this.isCrit = isCrit
         hitting = false
         hitTime = 0f
         syncDstRect()
@@ -94,10 +101,16 @@ class Bullet private constructor(
         private const val HIT_DURATION = 0.1f
         private const val HIT_SIZE = 110f
 
-        fun get(gctx: GameContext, x: Float, y: Float): Bullet {
-            val scene = gctx.scene as? MainScene ?: return Bullet(gctx).init(x, y)
+        fun get(
+            gctx: GameContext,
+            x: Float,
+            y: Float,
+            power: Int = DAMAGE,
+            isCrit: Boolean = false,
+        ): Bullet {
+            val scene = gctx.scene as? MainScene ?: return Bullet(gctx).init(x, y, power, isCrit)
             val bullet = scene.world.obtain(Bullet::class.java) ?: Bullet(gctx)
-            return bullet.init(x, y)
+            return bullet.init(x, y, power, isCrit)
         }
     }
 }

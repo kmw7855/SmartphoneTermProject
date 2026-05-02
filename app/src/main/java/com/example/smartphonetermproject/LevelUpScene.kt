@@ -35,37 +35,46 @@ class LevelUpScene(
         }
     }
 
+    private val cardLabels = listOf(
+        "공격력" to "x2",
+        "공속" to "+30%",
+        "치명타" to "+50%",
+    )
+
     override fun update(gctx: GameContext) {}
 
     override fun draw(canvas: Canvas) {
         canvas.drawRect(0f, 0f, gctx.metrics.width, gctx.metrics.height, backgroundPaint)
         canvas.drawText("Level Up!", titleX, titleY, titlePaint)
-        for (rect in cardRects) {
+        for ((i, rect) in cardRects.withIndex()) {
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardFillPaint)
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardStrokePaint)
-            canvas.drawText(
-                "Level Up",
-                rect.centerX(),
-                rect.centerY() + CARD_TEXT_SIZE / 3f,
-                cardTextPaint,
-            )
+            val (title, effect) = cardLabels[i]
+            canvas.drawText(title, rect.centerX(), rect.centerY() - CARD_TEXT_SIZE * 0.3f, cardTextPaint)
+            canvas.drawText(effect, rect.centerX(), rect.centerY() + CARD_TEXT_SIZE * 0.9f, cardTextPaint)
         }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (event.actionMasked != MotionEvent.ACTION_UP) return true
         val pt = gctx.metrics.fromScreen(event.x, event.y)
-        for (rect in cardRects) {
+        for ((i, rect) in cardRects.withIndex()) {
             if (rect.contains(pt.x, pt.y)) {
-                onCardSelected()
+                onCardSelected(i)
                 return true
             }
         }
         return true
     }
 
-    private fun onCardSelected() {
-        mainScene.player.levelUp()
+    private fun onCardSelected(idx: Int) {
+        val player = mainScene.player
+        when (idx) {
+            0 -> player.attackMul *= ATK_BOOST
+            1 -> player.fireRateMul *= RATE_BOOST
+            2 -> player.critRate = (player.critRate + CRIT_BOOST).coerceAtMost(1f)
+        }
+        player.levelUp()
         pop()
     }
 
@@ -76,5 +85,9 @@ class LevelUpScene(
         private const val CARD_GAP = 30f
         private const val CARD_CORNER = 24f
         private const val CARD_TEXT_SIZE = 56f
+
+        private const val ATK_BOOST = 2.0f
+        private const val RATE_BOOST = 1.3f
+        private const val CRIT_BOOST = 0.5f
     }
 }

@@ -6,6 +6,7 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IBoxCollidable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.Sprite
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 import kotlin.math.hypot
+import kotlin.random.Random
 
 class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder), IBoxCollidable {
     override var width = PLAYER_WIDTH
@@ -39,6 +40,10 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     var maxExp =  LEVEL_UP_EXP_BASE
         private set
 
+    var attackMul: Float = 1f
+    var fireRateMul: Float = 1f
+    var critRate: Float = 0f
+
     fun gainExp(amount: Int) {
         exp += amount
     }
@@ -48,6 +53,13 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         if (exp < 0) exp = 0
         level += 1
         maxExp = (maxExp * 1.5f).toInt()
+    }
+
+    fun calculatePower(): Pair<Int, Boolean> {
+        val basePower = (Bullet.DAMAGE * attackMul).toInt().coerceAtLeast(1)
+        val isCrit = Random.nextFloat() < critRate
+        val power = if (isCrit) basePower * CRIT_MUL else basePower
+        return power to isCrit
     }
 
     init {
@@ -83,10 +95,12 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     private fun fireBullet(gctx: GameContext) {
         fireCooldown -= gctx.frameTime
         if (fireCooldown > 0f) return
-        fireCooldown = FIRE_INTERVAL
+        fireCooldown = FIRE_INTERVAL / fireRateMul
 
         val scene = gctx.scene as? MainScene ?: return
-        val bullet = Bullet.get(gctx, x, y - PLAYER_HEIGHT / 2f - BULLET_OFFSET)
+        val muzzleY = y - PLAYER_HEIGHT / 2f - BULLET_OFFSET
+        val (power, isCrit) = calculatePower()
+        val bullet = Bullet.get(gctx, x, muzzleY, power, isCrit)
         scene.world.add(bullet, MainScene.Layer.BULLET)
     }
 
@@ -115,5 +129,6 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         const val FIRE_INTERVAL = 0.3f
         const val BULLET_OFFSET = 8f
         private const val LEVEL_UP_EXP_BASE = 3
+        private const val CRIT_MUL = 3
     }
 }

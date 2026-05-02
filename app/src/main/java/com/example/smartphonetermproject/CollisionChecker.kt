@@ -2,12 +2,37 @@ package com.example.smartphonetermproject
 
 import android.app.Activity
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IGameObject
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.collidesWith
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 
 class CollisionChecker(private val gctx: GameContext) : IGameObject {
     private var gameOverTriggered = false
+
+    private class DamagePopup {
+        var x = 0f
+        var startY = 0f
+        var y = 0f
+        var age = 0f
+        var power = 0
+        var isCrit = false
+    }
+
+    private val popups = ArrayList<DamagePopup>()
+    private val popupPool = ArrayList<DamagePopup>()
+
+    private fun spawnPopup(x: Float, y: Float, power: Int, isCrit: Boolean) {
+        val p = if (popupPool.isNotEmpty()) popupPool.removeAt(popupPool.lastIndex) else DamagePopup()
+        p.x = x
+        p.startY = y
+        p.y = y
+        p.age = 0f
+        p.power = power
+        p.isCrit = isCrit
+        popups.add(p)
+    }
 
     override fun update(gctx: GameContext) {
         if (gameOverTriggered) return
@@ -31,7 +56,8 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
                 val bullet = bulletObject as? Bullet ?: return@forEachReversedAt
                 if (bullet.collidesWith(enemy)) {
                     bullet.startHitting()
-                    enemy.decreaseLife(Bullet.DAMAGE)
+                    enemy.decreaseLife(bullet.power)
+                    spawnPopup(enemy.x, enemy.y, bullet.power, bullet.isCrit)
                     if (enemy.dead) {
                         enemy.startDying(scene)
                         scene.addScore(enemy.score)
@@ -59,12 +85,52 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
                 scene.world.remove(orb, MainScene.Layer.EXP_ORB)
             }
         }
+
+        for (i in popups.indices.reversed()) {
+            val p = popups[i]
+            p.age += gctx.frameTime
+            if (p.age >= POPUP_LIFETIME) {
+                popups.removeAt(i)
+                popupPool.add(p)
+            } else {
+                p.y = p.startY - p.age * POPUP_RISE_SPEED
+            }
+        }
     }
 
-    override fun draw(canvas: Canvas) {}
+    override fun draw(canvas: Canvas) {
+        for (p in popups) {
+            val alpha = (255f * (1f - p.age / POPUP_LIFETIME)).toInt().coerceIn(0, 255)
+            val paint = if (p.isCrit) critPaint else normalPaint
+            paint.alpha = alpha
+            canvas.drawText(p.power.toString(), p.x, p.y, paint)
+        }
+    }
 
     private fun triggerGameOver() {
         gameOverTriggered = true
         (gctx.view.context as? Activity)?.finish()
+    }
+
+    companion object {
+        private const val POPUP_LIFETIME = 0.7f
+        private const val POPUP_RISE_SPEED = 200f
+        private const val POPUP_NORMAL_TEXT_SIZE = 80f
+        private const val POPUP_CRIT_TEXT_SIZE = 100f
+
+        private val normalPaint = Paint().apply {
+            color = Color.WHITE
+            textSize = POPUP_NORMAL_TEXT_SIZE
+            textAlign = Paint.Align.CENTER
+            isAntiAlias = true
+            isFakeBoldText = true
+        }
+        private val critPaint = Paint().apply {
+            color = Color.rgb(255, 220, 0)
+            textSize = POPUP_CRIT_TEXT_SIZE
+            textAlign = Paint.Align.CENTER
+            isAntiAlias = true
+            isFakeBoldText = true
+        }
     }
 }

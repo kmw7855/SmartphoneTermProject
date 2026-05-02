@@ -45,6 +45,7 @@ open class MainScene(
     }
 
     private val expLabel = ExpLabel(gctx)
+    private val debugStatLabel = DebugStatLabel(gctx)
 
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
@@ -53,9 +54,10 @@ open class MainScene(
         if (!isBossStage) add(enemyGenerator, Layer.CONTROLLER)
         add(scoreLabel, Layer.UI)
         add(bossTimerHud, Layer.UI)
-        add(collisionChecker, Layer.CONTROLLER)
+        add(collisionChecker, Layer.UI)
         add(playerHpHud, Layer.UI)
         add(expLabel, Layer.UI)
+        add(debugStatLabel, Layer.UI)
     }
 
     override fun update(gctx: GameContext) {
