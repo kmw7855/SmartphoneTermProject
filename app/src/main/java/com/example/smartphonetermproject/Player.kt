@@ -44,6 +44,9 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     var fireRateMul: Float = 1f
     var critRate: Float = 0f
 
+    var currentWeapon: Weapon = ShotgunWeapon
+    var weaponGrade: WeaponGrade = WeaponGrade.RARE
+
     fun gainExp(amount: Int) {
         exp += amount
     }
@@ -95,13 +98,9 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     private fun fireBullet(gctx: GameContext) {
         fireCooldown -= gctx.frameTime
         if (fireCooldown > 0f) return
-        fireCooldown = FIRE_INTERVAL / fireRateMul
-
+        fireCooldown = currentWeapon.fireInterval / fireRateMul
         val scene = gctx.scene as? MainScene ?: return
-        val muzzleY = y - PLAYER_HEIGHT / 2f - BULLET_OFFSET
-        val (power, isCrit) = calculatePower()
-        val bullet = Bullet.get(gctx, x, muzzleY, power, isCrit)
-        scene.world.add(bullet, MainScene.Layer.BULLET)
+        currentWeapon.fire(this, scene, gctx, weaponGrade)
     }
 
     fun decreaseLife(damage: Int) {
@@ -126,7 +125,6 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         const val PLAYER_HEIGHT = 200f
         const val MAX_LIFE = 10
         private const val COLLISION_INSET_RATIO = 0.6f
-        const val FIRE_INTERVAL = 0.3f
         const val BULLET_OFFSET = 8f
         private const val LEVEL_UP_EXP_BASE = 3
         private const val CRIT_MUL = 3
