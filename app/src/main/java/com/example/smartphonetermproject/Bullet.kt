@@ -162,7 +162,7 @@ class Bullet private constructor(
         const val BULLET_WIDTH = 80f
         const val BULLET_HEIGHT = 160f
         const val SPEED = 1500f
-        const val DAMAGE = 1
+        const val DAMAGE = 10
         private const val COLLISION_INSET_RATIO = 0.3f
         private const val HIT_DURATION = 0.1f
         private const val HIT_SIZE = 110f

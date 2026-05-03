@@ -27,10 +27,10 @@ class Enemy private constructor(
         val score: Int,
         val hitDamage: Int,
     ) {
-        SUICIDE(R.mipmap.enemy_suicide, 180f, 180f, 1, 280f, 10, 2),
-        RANGED(R.mipmap.enemy_ranged, 135f, 135f, 2, 150f, 20, 1),
-        SPLIT(R.mipmap.enemy_split, 230f, 230f, 3, 220f, 30, 1),
-        SPLIT_MINION(R.mipmap.enemy_split, 105f, 105f, 1, 240f, 10, 1),
+        SUICIDE(R.mipmap.enemy_suicide, 180f, 180f, 10, 280f, 10, 2),
+        RANGED(R.mipmap.enemy_ranged, 135f, 135f, 20, 150f, 20, 1),
+        SPLIT(R.mipmap.enemy_split, 230f, 230f, 30, 220f, 30, 1),
+        SPLIT_MINION(R.mipmap.enemy_split, 105f, 105f, 10, 240f, 10, 1),
     }
 
     private enum class RangedPhase { APPROACHING, ATTACKING }

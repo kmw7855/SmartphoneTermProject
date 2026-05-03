@@ -84,3 +84,20 @@ object HomingWeapon : Weapon() {
     private const val Homing_TARGET_SPEED = 1100f
     private const val Homing_TURN_RATE = 6f
 }
+
+object LaserWeapon : Weapon() {
+    override val displayName = "레이저"
+    override val fireInterval = 2.2f
+
+    override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
+        val beamHalf = if (grade == WeaponGrade.EPIC) 150f else 60f
+        val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
+        val tickPower = (player.calculatePower().first / 4).coerceAtLeast(1)
+        scene.world.add(
+            LaserBeam.get(gctx, muzzleY, LASER_LIFETIME, tickPower, beamHalf),
+            MainScene.Layer.LASER,
+        )
+    }
+
+    private const val LASER_LIFETIME = 1.0f
+}

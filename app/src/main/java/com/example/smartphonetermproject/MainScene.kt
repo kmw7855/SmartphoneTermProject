@@ -17,6 +17,7 @@ open class MainScene(
         BULLET,
         ENEMY,
         ENEMY_BULLET,
+        LASER,
         CONTROLLER,
         STARS,
         EXP_ORB,
