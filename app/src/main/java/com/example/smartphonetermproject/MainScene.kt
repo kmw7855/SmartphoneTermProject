@@ -48,6 +48,8 @@ open class MainScene(
     private val expLabel = ExpLabel(gctx)
     private val debugStatLabel = DebugStatLabel(gctx)
 
+    val cardPool = CardPool()
+
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
         add(player, Layer.PLAYER)
@@ -65,7 +67,7 @@ open class MainScene(
         super.update(gctx)
 
         if (player.exp >= player.maxExp) {
-            LevelUpScene(gctx, this).push()
+            LevelUpScene(gctx, this, cardPool.pickThree()).push()
             return
         }
 

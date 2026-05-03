@@ -1,5 +1,6 @@
 package com.example.smartphonetermproject
 
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -11,16 +12,22 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 class LevelUpScene(
     gctx: GameContext,
     private val mainScene: MainScene,
+    private val cards: List<RewardCard>,
 ) : Scene(gctx) {
 
     private val backgroundPaint = Paint().apply { style = Paint.Style.FILL; color = Color.argb(160, 0, 0, 0) }
     private val cardFillPaint = Paint().apply { style = Paint.Style.FILL; color = Color.rgb(28, 36, 56); isAntiAlias = true }
-    private val cardStrokePaint = Paint().apply { style = Paint.Style.STROKE; strokeWidth = 4f; color = Color.rgb(34, 211, 238); isAntiAlias = true }
+    private val cardStrokePaint = Paint().apply { style = Paint.Style.STROKE; strokeWidth = 4f; isAntiAlias = true }
     private val titlePaint = Paint().apply {
         color = Color.rgb(34, 211, 238); textSize = TITLE_TEXT_SIZE; textAlign = Paint.Align.CENTER
         isAntiAlias = true; isFakeBoldText = true
     }
-    private val cardTextPaint = Paint().apply { color = Color.WHITE; textSize = CARD_TEXT_SIZE; textAlign = Paint.Align.CENTER; isAntiAlias = true }
+    private val cardTextPaint = Paint().apply {
+        color = Color.WHITE; textSize = CARD_TEXT_SIZE; textAlign = Paint.Align.CENTER; isAntiAlias = true
+    }
+    private val gradeTextPaint = Paint().apply {
+        textSize = GRADE_TEXT_SIZE; textAlign = Paint.Align.CENTER; isAntiAlias = true; isFakeBoldText = true
+    }
 
     private val titleX = gctx.metrics.width / 2f
     private val titleY = gctx.metrics.height * 0.30f
@@ -35,11 +42,8 @@ class LevelUpScene(
         }
     }
 
-    private val cardLabels = listOf(
-        "공격력" to "x2",
-        "공속" to "+30%",
-        "치명타" to "+50%",
-    )
+    private val weaponBitmaps = mutableMapOf<Int, Bitmap>()
+    private val weaponSpriteRect = RectF()
 
     override fun update(gctx: GameContext) {}
 
@@ -47,12 +51,49 @@ class LevelUpScene(
         canvas.drawRect(0f, 0f, gctx.metrics.width, gctx.metrics.height, backgroundPaint)
         canvas.drawText("Level Up!", titleX, titleY, titlePaint)
         for ((i, rect) in cardRects.withIndex()) {
+            val card = cards.getOrNull(i) ?: continue
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardFillPaint)
+            cardStrokePaint.color =
+                if (card is WeaponCard) card.grade.cardColor
+                else Color.rgb(34, 211, 238)
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardStrokePaint)
-            val (title, effect) = cardLabels[i]
-            canvas.drawText(title, rect.centerX(), rect.centerY() - CARD_TEXT_SIZE * 0.3f, cardTextPaint)
-            canvas.drawText(effect, rect.centerX(), rect.centerY() + CARD_TEXT_SIZE * 0.9f, cardTextPaint)
+            if (card is WeaponCard) drawWeaponCard(canvas, rect, card)
+            else drawStatCard(canvas, rect, card)
         }
+    }
+
+    private fun drawStatCard(canvas: Canvas, rect: RectF, card: RewardCard) {
+        drawFitText(canvas, card.title,  rect.centerX(), rect.centerY() - CARD_TEXT_SIZE * 0.3f, cardTextPaint, CARD_TEXT_SIZE)
+        drawFitText(canvas, card.effect, rect.centerX(), rect.centerY() + CARD_TEXT_SIZE * 0.9f, cardTextPaint, CARD_TEXT_SIZE)
+    }
+
+    private fun drawWeaponCard(canvas: Canvas, rect: RectF, card: WeaponCard) {
+        val bmp = weaponBitmaps.getOrPut(card.weapon.cardSpriteResId) {
+            gctx.res.getBitmap(card.weapon.cardSpriteResId)
+        }
+        val size = CARD_WIDTH * 0.55f
+        val cy = rect.top + CARD_HEIGHT * 0.28f
+        weaponSpriteRect.set(
+            rect.centerX() - size / 2f, cy - size / 2f,
+            rect.centerX() + size / 2f, cy + size / 2f,
+        )
+        canvas.drawBitmap(bmp, null, weaponSpriteRect, null)
+
+        gradeTextPaint.color = card.grade.cardColor
+        drawFitText(canvas, card.grade.displayName,
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.55f, gradeTextPaint, GRADE_TEXT_SIZE)
+        drawFitText(canvas, card.weapon.displayName,
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.70f, cardTextPaint, CARD_TEXT_SIZE)
+        drawFitText(canvas, card.effect,
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.85f, cardTextPaint, CARD_TEXT_SIZE)
+    }
+
+    private fun drawFitText(canvas: Canvas, text: String, cx: Float, y: Float, paint: Paint, baseSize: Float) {
+        paint.textSize = baseSize
+        val measured = paint.measureText(text)
+        val maxWidth = CARD_WIDTH - CARD_TEXT_PADDING * 2f
+        if (measured > maxWidth) paint.textSize = baseSize * (maxWidth / measured)
+        canvas.drawText(text, cx, y, paint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -68,26 +109,21 @@ class LevelUpScene(
     }
 
     private fun onCardSelected(idx: Int) {
-        val player = mainScene.player
-        when (idx) {
-            0 -> player.attackMul *= ATK_BOOST
-            1 -> player.fireRateMul *= RATE_BOOST
-            2 -> player.critRate = (player.critRate + CRIT_BOOST).coerceAtMost(1f)
-        }
-        player.levelUp()
+        val card = cards.getOrNull(idx) ?: return
+        card.apply(mainScene.player)
+        mainScene.cardPool.consume(card)
+        mainScene.player.levelUp()
         pop()
     }
 
     companion object {
-        private const val TITLE_TEXT_SIZE = 90f
-        private const val CARD_WIDTH = 230f
-        private const val CARD_HEIGHT = 320f
-        private const val CARD_GAP = 30f
-        private const val CARD_CORNER = 24f
-        private const val CARD_TEXT_SIZE = 56f
-
-        private const val ATK_BOOST = 2.0f
-        private const val RATE_BOOST = 1.3f
-        private const val CRIT_BOOST = 0.5f
+        private const val TITLE_TEXT_SIZE = 110f
+        private const val CARD_WIDTH = 260f
+        private const val CARD_HEIGHT = 420f
+        private const val CARD_GAP = 40f
+        private const val CARD_CORNER = 32f
+        private const val CARD_TEXT_SIZE = 40f
+        private const val GRADE_TEXT_SIZE = 40f
+        private const val CARD_TEXT_PADDING = 16f
     }
 }

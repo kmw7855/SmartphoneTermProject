@@ -1,23 +1,26 @@
 package com.example.smartphonetermproject
 
+import android.graphics.Color
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 import kotlin.math.cos
 import kotlin.math.sin
 
-enum class WeaponGrade(val displayName: String) {
-    RARE("희귀"),
-    EPIC("영웅"),
+enum class WeaponGrade(val displayName: String, val cardColor: Int) {
+    RARE("희귀", Color.rgb(96, 165, 250)),
+    EPIC("영웅", Color.rgb(168, 85, 247)),
 }
 
 sealed class Weapon {
     abstract val displayName: String
     abstract val fireInterval: Float
+    abstract val cardSpriteResId: Int
     abstract fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade)
 }
 
 object DefaultWeapon : Weapon() {
     override val displayName = "직진"
     override val fireInterval = 0.3f
+    override val cardSpriteResId = R.mipmap.bullet_placeholder
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
         val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
@@ -32,6 +35,7 @@ object DefaultWeapon : Weapon() {
 object ShotgunWeapon : Weapon() {
     override val displayName = "샷건"
     override val fireInterval = 0.6f
+    override val cardSpriteResId = R.mipmap.weapon_shotgun
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
         val pelletCount = if (grade == WeaponGrade.EPIC) 5 else 3
@@ -59,6 +63,7 @@ object ShotgunWeapon : Weapon() {
 object HomingWeapon : Weapon() {
     override val displayName = "유도 미사일"
     override val fireInterval = 0.8f
+    override val cardSpriteResId = R.mipmap.weapon_homing
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
         val HomingCount = if (grade == WeaponGrade.EPIC) 2 else 1
@@ -88,6 +93,7 @@ object HomingWeapon : Weapon() {
 object LaserWeapon : Weapon() {
     override val displayName = "레이저"
     override val fireInterval = 2.2f
+    override val cardSpriteResId = R.mipmap.weapon_laser
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
         val beamHalf = if (grade == WeaponGrade.EPIC) 150f else 60f
