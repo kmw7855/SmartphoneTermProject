@@ -1,8 +1,12 @@
 package com.example.smartphonetermproject
 
+import kotlin.random.Random
+
 sealed class RewardCard {
     abstract val title: String
     abstract val effect: String
+    open val grade: WeaponGrade = WeaponGrade.UNCOMMON
+    open val cardColor: Int = WeaponGrade.UNCOMMON.cardColor
     abstract fun apply(player: Player)
 }
 
@@ -38,10 +42,11 @@ object CritRateStatCard : RewardCard() {
 
 class WeaponCard(
     val weapon: Weapon,
-    val grade: WeaponGrade,
+    override val grade: WeaponGrade,
 ) : RewardCard() {
     override val title = weapon.displayName
     override val effect = "장착"
+    override val cardColor = grade.cardColor
     override fun apply(player: Player) {
         player.currentWeapon = weapon
         player.weaponGrade = grade
@@ -64,8 +69,25 @@ class CardPool {
         WeaponCard(HomingWeapon,  WeaponGrade.EPIC),
     )
 
-    fun pickThree(): List<RewardCard> =
-        (statCards + weaponCards).shuffled().take(3)
+    fun pickThree(): List<RewardCard> {
+        val pool = (statCards + weaponCards).toMutableList()
+        val result = mutableListOf<RewardCard>()
+        while (result.size < 3 && pool.isNotEmpty()) {
+            val byGrade = pool.groupBy { it.grade }
+            val grades = byGrade.keys.toList()
+            val totalWeight = grades.sumOf { it.dropWeight.toDouble() }
+            var roll = Random.nextDouble() * totalWeight
+            var pickedGrade = grades.last()
+            for (g in grades) {
+                roll -= g.dropWeight
+                if (roll <= 0) { pickedGrade = g; break }
+            }
+            val card = byGrade.getValue(pickedGrade).random()
+            result.add(card)
+            pool.remove(card)
+        }
+        return result
+    }
 
     fun consume(card: RewardCard) {
         if (card !is WeaponCard) return

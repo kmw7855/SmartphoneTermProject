@@ -16,6 +16,7 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
         var startY = 0f
         var y = 0f
         var age = 0f
+        var lifetime = POPUP_LIFETIME
         var power = 0
         var isCrit = false
     }
@@ -23,12 +24,13 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
     private val popups = ArrayList<DamagePopup>()
     private val popupPool = ArrayList<DamagePopup>()
 
-    private fun spawnPopup(x: Float, y: Float, power: Int, isCrit: Boolean) {
+    fun spawnPopup(x: Float, y: Float, power: Int, isCrit: Boolean, lifetime: Float = POPUP_LIFETIME) {
         val p = if (popupPool.isNotEmpty()) popupPool.removeAt(popupPool.lastIndex) else DamagePopup()
-        p.x = x
+        p.x = x + POPUP_X_OFFSET
         p.startY = y
         p.y = y
         p.age = 0f
+        p.lifetime = lifetime
         p.power = power
         p.isCrit = isCrit
         popups.add(p)
@@ -89,7 +91,7 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
         for (i in popups.indices.reversed()) {
             val p = popups[i]
             p.age += gctx.frameTime
-            if (p.age >= POPUP_LIFETIME) {
+            if (p.age >= p.lifetime) {
                 popups.removeAt(i)
                 popupPool.add(p)
             } else {
@@ -100,7 +102,7 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
 
     override fun draw(canvas: Canvas) {
         for (p in popups) {
-            val alpha = (255f * (1f - p.age / POPUP_LIFETIME)).toInt().coerceIn(0, 255)
+            val alpha = (255f * (1f - p.age / p.lifetime)).toInt().coerceIn(0, 255)
             val paint = if (p.isCrit) critPaint else normalPaint
             paint.alpha = alpha
             canvas.drawText(p.power.toString(), p.x, p.y, paint)
@@ -115,6 +117,7 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
     companion object {
         private const val POPUP_LIFETIME = 0.7f
         private const val POPUP_RISE_SPEED = 200f
+        private const val POPUP_X_OFFSET = 60f
         private const val POPUP_NORMAL_TEXT_SIZE = 80f
         private const val POPUP_CRIT_TEXT_SIZE = 100f
 

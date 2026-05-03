@@ -53,9 +53,7 @@ class LevelUpScene(
         for ((i, rect) in cardRects.withIndex()) {
             val card = cards.getOrNull(i) ?: continue
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardFillPaint)
-            cardStrokePaint.color =
-                if (card is WeaponCard) card.grade.cardColor
-                else Color.rgb(34, 211, 238)
+            cardStrokePaint.color = card.cardColor
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardStrokePaint)
             if (card is WeaponCard) drawWeaponCard(canvas, rect, card)
             else drawStatCard(canvas, rect, card)

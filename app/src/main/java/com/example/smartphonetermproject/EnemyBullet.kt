@@ -7,6 +7,7 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IBoxCollidable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IRecyclable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.Sprite
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
+import kotlin.math.atan2
 
 class EnemyBullet private constructor(
     gctx: GameContext,
@@ -84,7 +85,16 @@ class EnemyBullet private constructor(
             canvas.drawBitmap(bmp, null, hitRect, null)
             return
         }
+
+        val rotationDeg = if (vx == 0f && vy == 0f) {
+            0f
+        } else {
+            Math.toDegrees(atan2(vy, vx).toDouble()).toFloat() - 90f
+        }
+        canvas.save()
+        canvas.rotate(rotationDeg, x, y)
         super.draw(canvas)
+        canvas.restore()
     }
 
     fun startHitting() {

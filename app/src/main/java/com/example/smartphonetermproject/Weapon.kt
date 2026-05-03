@@ -5,9 +5,10 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 import kotlin.math.cos
 import kotlin.math.sin
 
-enum class WeaponGrade(val displayName: String, val cardColor: Int) {
-    RARE("희귀", Color.rgb(96, 165, 250)),
-    EPIC("영웅", Color.rgb(168, 85, 247)),
+enum class WeaponGrade(val displayName: String, val cardColor: Int, val dropWeight: Float) {
+    UNCOMMON("고급", Color.rgb(34, 197, 94), 0.55f),
+    RARE("희귀", Color.rgb(96, 165, 250), 0.35f),
+    EPIC("영웅", Color.rgb(168, 85, 247), 0.15f),
 }
 
 sealed class Weapon {
@@ -98,9 +99,8 @@ object LaserWeapon : Weapon() {
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
         val beamHalf = if (grade == WeaponGrade.EPIC) 150f else 60f
         val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
-        val tickPower = (player.calculatePower().first / 4).coerceAtLeast(1)
         scene.world.add(
-            LaserBeam.get(gctx, muzzleY, LASER_LIFETIME, tickPower, beamHalf),
+            LaserBeam.get(gctx, muzzleY, LASER_LIFETIME, beamHalf),
             MainScene.Layer.LASER,
         )
     }

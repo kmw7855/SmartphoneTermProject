@@ -18,7 +18,6 @@ class LaserBeam private constructor(
     private var lifetime = 0f
     private var elapsed = 0f
     private var tickCooldown = 0f
-    private var power = 0
     private var beamHalf = 0f
 
     private val beamRect = RectF()
@@ -28,12 +27,11 @@ class LaserBeam private constructor(
         if (sharedBitmap == null) sharedBitmap = gctx.res.getBitmap(R.mipmap.weapon_laser)
     }
 
-    fun init(startBottom: Float, lifetime: Float, power: Int, beamHalf: Float): LaserBeam {
+    fun init(startBottom: Float, lifetime: Float, beamHalf: Float): LaserBeam {
         this.beamBottom = startBottom
         this.lifetime = lifetime
         this.elapsed = 0f
         this.tickCooldown = 0f
-        this.power = power
         this.beamHalf = beamHalf
         return this
     }
@@ -58,7 +56,10 @@ class LaserBeam private constructor(
             scene.world.forEachReversedAt(MainScene.Layer.ENEMY) { enemyObj ->
                 val enemy = enemyObj as? Enemy ?: return@forEachReversedAt
                 if (collidesWith(enemy)) {
-                    enemy.decreaseLife(power)
+                    val (rawPower, isCrit) = player.calculatePower()
+                    val tickPower = (rawPower / LASER_DAMAGE_DIVISOR).coerceAtLeast(1)
+                    enemy.decreaseLife(tickPower)
+                    scene.spawnDamagePopup(enemy.x, enemy.y, tickPower, isCrit)
                     if (enemy.dead) {
                         enemy.startDying(scene)
                         scene.addScore(enemy.score)
@@ -83,6 +84,7 @@ class LaserBeam private constructor(
 
     companion object {
         private const val LASER_TICK_INTERVAL = 0.1f
+        private const val LASER_DAMAGE_DIVISOR = 4
         private const val COLLISION_INSET_RATIO = 0.15f
 
         private var sharedBitmap: Bitmap? = null
@@ -91,13 +93,12 @@ class LaserBeam private constructor(
             gctx: GameContext,
             startBottom: Float,
             lifetime: Float,
-            power: Int,
             beamHalf: Float,
         ): LaserBeam {
             val scene = gctx.scene as? MainScene
-                ?: return LaserBeam(gctx).init(startBottom, lifetime, power, beamHalf)
+                ?: return LaserBeam(gctx).init(startBottom, lifetime, beamHalf)
             val laser = scene.world.obtain(LaserBeam::class.java) ?: LaserBeam(gctx)
-            return laser.init(startBottom, lifetime, power, beamHalf)
+            return laser.init(startBottom, lifetime, beamHalf)
         }
     }
 }

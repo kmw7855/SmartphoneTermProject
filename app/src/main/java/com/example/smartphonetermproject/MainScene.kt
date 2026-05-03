@@ -45,6 +45,10 @@ open class MainScene(
         score += amount
     }
 
+    fun spawnDamagePopup(x: Float, y: Float, power: Int, isCrit: Boolean) {
+        collisionChecker.spawnPopup(x, y, power, isCrit)
+    }
+
     private val expLabel = ExpLabel(gctx)
     private val debugStatLabel = DebugStatLabel(gctx)
 
