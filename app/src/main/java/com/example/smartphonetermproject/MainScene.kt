@@ -31,7 +31,8 @@ open class MainScene(
 
     var elapsedSec = 0f
         private set
-    private var bossEntered = isBossStage
+    private var bossPromptPending = false
+    private var nextPromptAt = BOSS_ENTER_TIME
 
     private val enemyGenerator = EnemyGenerator(gctx)
     private val collisionChecker = CollisionChecker(gctx)
@@ -75,12 +76,18 @@ open class MainScene(
             return
         }
 
-        if (bossEntered) return
+        if (isBossStage) return
+        if (bossPromptPending) return
         elapsedSec += gctx.frameTime
-        if (elapsedSec >= BOSS_ENTER_TIME) {
-            bossEntered = true
-            BossScene(gctx).change()
+        if (elapsedSec >= nextPromptAt) {
+            bossPromptPending = true
+            BossEntryScene(gctx, this).push()
         }
+    }
+
+    fun dismissBossPrompt() {
+        bossPromptPending = false
+        nextPromptAt += BOSS_ENTER_TIME
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -91,7 +98,7 @@ open class MainScene(
 
     companion object {
         private const val BACKGROUND_SPEED = 80f
-        private const val BOSS_ENTER_TIME = 60f
+        private const val BOSS_ENTER_TIME = 15f
         private const val STARS_SPEED = 150f
     }
 }
