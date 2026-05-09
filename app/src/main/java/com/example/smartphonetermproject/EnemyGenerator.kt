@@ -11,7 +11,8 @@ class EnemyGenerator(private val gctx: GameContext) : IGameObject {
     override fun update(gctx: GameContext) {
         enemyTime -= gctx.frameTime
         if (enemyTime > 0f) return
-        enemyTime = GEN_INTERVAL
+        val mul = (gctx.scene as? MainScene)?.spawnRateMul() ?: 1f
+        enemyTime = GEN_INTERVAL / mul
         spawn()
     }
 

@@ -88,8 +88,10 @@ class Enemy private constructor(
         this.bitmap = gctx.res.getBitmap(type.resId)
         this.width = type.width
         this.height = type.height
-        this.life = type.hp
-        this.maxLife = type.hp
+        val statMul = (gctx.scene as? MainScene)?.enemyStatMul() ?: 1f
+        val scaledHp = (type.hp * statMul).toInt().coerceAtLeast(1)
+        this.life = scaledHp
+        this.maxLife = scaledHp
         this.speed = type.speed
         this.x = x
         this.y = startY ?: -type.height / 2f
