@@ -43,3 +43,25 @@ object ExplosionSkill : Skill(
         )
     }
 }
+
+object HealSkill : Skill(
+    displayName = "힐",
+    effect = "스킬 : 힐",
+    color = Color.rgb(60, 200, 120),
+    cooldownTime = 10f,
+) {
+    private const val HEAL_AMOUNT = 5
+
+    override fun canActivate(player: Player): Boolean = player.life < player.maxLife
+
+    override fun activate(player: Player, scene: MainScene) {
+        player.heal(HEAL_AMOUNT)
+        scene.spawnVfx(
+            resId = R.mipmap.skill_heal,
+            x = player.x, y = player.y,
+            size = VfxSpec.SIZE_PLAYER,
+            fps = VfxSpec.FPS,
+            duration = VfxSpec.DURATION_ONE_SHOT,
+        )
+    }
+}

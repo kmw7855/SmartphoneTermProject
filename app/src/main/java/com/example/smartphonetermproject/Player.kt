@@ -16,14 +16,14 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
 
     override val collisionRect = RectF()
 
-    var life = MAX_LIFE
+    var life = TEST_INITIAL_LIFE
         private set
     val maxLife: Int
         get() = MAX_LIFE
     val dead: Boolean
         get() = life <= 0
 
-    var currentSkill: Skill? = ExplosionSkill
+    var currentSkill: Skill? = HealSkill
 
     private val minX = PLAYER_WIDTH / 2f
     private val maxX = gctx.metrics.width - PLAYER_WIDTH / 2f
@@ -65,6 +65,10 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         val isCrit = Random.nextFloat() < critRate
         val power = if (isCrit) basePower * CRIT_MUL else basePower
         return power to isCrit
+    }
+
+    fun heal(amount: Int) {
+        life = (life + amount).coerceAtMost(MAX_LIFE)
     }
 
     init {
@@ -126,6 +130,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         const val PLAYER_WIDTH = 200f
         const val PLAYER_HEIGHT = 200f
         const val MAX_LIFE = 10
+        private const val TEST_INITIAL_LIFE = 4
         private const val COLLISION_INSET_RATIO = 0.6f
         const val BULLET_OFFSET = 8f
         private const val LEVEL_UP_EXP_BASE = 3
