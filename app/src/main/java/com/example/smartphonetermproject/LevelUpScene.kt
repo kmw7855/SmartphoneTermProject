@@ -45,6 +45,29 @@ class LevelUpScene(
     private val weaponBitmaps = mutableMapOf<Int, Bitmap>()
     private val weaponSpriteRect = RectF()
 
+    private val skillBitmaps = mutableMapOf<Int, Bitmap>()
+    private val skillIconRect = RectF()
+
+    private val skillIconFillPaint = Paint().apply {
+        style = Paint.Style.FILL; isAntiAlias = true
+    }
+    private val skillIconStrokePaint = Paint().apply {
+        style = Paint.Style.STROKE; strokeWidth = 4f; color = Color.WHITE; isAntiAlias = true
+    }
+    private val skillIconLabelPaint = Paint().apply {
+        color = Color.WHITE
+        textAlign = Paint.Align.CENTER
+        isAntiAlias = true
+        isFakeBoldText = true
+    }
+    private val skillTagPaint = Paint().apply {
+        color = Color.rgb(220, 200, 255)
+        textSize = CARD_TEXT_SIZE * 0.9f
+        textAlign = Paint.Align.CENTER
+        isAntiAlias = true
+        isFakeBoldText = true
+    }
+
     override fun update(gctx: GameContext) {}
 
     override fun draw(canvas: Canvas) {
@@ -55,14 +78,49 @@ class LevelUpScene(
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardFillPaint)
             cardStrokePaint.color = card.cardColor
             canvas.drawRoundRect(rect, CARD_CORNER, CARD_CORNER, cardStrokePaint)
-            if (card is WeaponCard) drawWeaponCard(canvas, rect, card)
-            else drawStatCard(canvas, rect, card)
+            when (card) {
+                is WeaponCard -> drawWeaponCard(canvas, rect, card)
+                is SkillCard -> drawSkillCard(canvas, rect, card)
+                else -> drawStatCard(canvas, rect, card)
+            }
         }
     }
 
     private fun drawStatCard(canvas: Canvas, rect: RectF, card: RewardCard) {
         drawFitText(canvas, card.title,  rect.centerX(), rect.centerY() - CARD_TEXT_SIZE * 0.3f, cardTextPaint, CARD_TEXT_SIZE)
         drawFitText(canvas, card.effect, rect.centerX(), rect.centerY() + CARD_TEXT_SIZE * 0.9f, cardTextPaint, CARD_TEXT_SIZE)
+    }
+
+    private fun drawSkillCard(canvas: Canvas, rect: RectF, card: SkillCard) {
+        val iconRadius = CARD_WIDTH * 0.22f
+        val iconCx = rect.centerX()
+        val iconCy = rect.top + CARD_HEIGHT * 0.30f
+
+        if (card.skill.iconResId != 0) {
+            val bmp = skillBitmaps.getOrPut(card.skill.iconResId) {
+                gctx.res.getBitmap(card.skill.iconResId)
+            }
+            skillIconRect.set(
+                iconCx - iconRadius, iconCy - iconRadius,
+                iconCx + iconRadius, iconCy + iconRadius,
+            )
+            canvas.drawBitmap(bmp, null, skillIconRect, null)
+        } else {
+            skillIconFillPaint.color = card.skill.color
+            canvas.drawCircle(iconCx, iconCy, iconRadius, skillIconFillPaint)
+            canvas.drawCircle(iconCx, iconCy, iconRadius, skillIconStrokePaint)
+
+            skillIconLabelPaint.textSize = iconRadius * 0.85f
+            val fm = skillIconLabelPaint.fontMetrics
+            canvas.drawText(card.skill.displayName, iconCx, iconCy - (fm.ascent + fm.descent) / 2f, skillIconLabelPaint)
+        }
+
+        drawFitText(canvas, "SKILL",
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.55f, skillTagPaint, CARD_TEXT_SIZE * 0.9f)
+        drawFitText(canvas, card.skill.displayName,
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.70f, cardTextPaint, CARD_TEXT_SIZE)
+        drawFitText(canvas, card.effect,
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.85f, cardTextPaint, CARD_TEXT_SIZE)
     }
 
     private fun drawWeaponCard(canvas: Canvas, rect: RectF, card: WeaponCard) {

@@ -83,7 +83,7 @@ open class MainScene(
         super.update(gctx)
 
         if (player.exp >= player.maxExp) {
-            LevelUpScene(gctx, this, cardPool.pickThree()).push()
+            LevelUpScene(gctx, this, cardPool.pickThree(player.currentSkill)).push()
             return
         }
 

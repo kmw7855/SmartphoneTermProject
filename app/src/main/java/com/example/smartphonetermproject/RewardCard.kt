@@ -1,5 +1,6 @@
 package com.example.smartphonetermproject
 
+import android.graphics.Color
 import kotlin.random.Random
 
 sealed class RewardCard {
@@ -53,6 +54,20 @@ class WeaponCard(
     }
 }
 
+class SkillCard(val skill: Skill) : RewardCard() {
+    override val title = skill.displayName
+    override val effect = skill.effect
+    override val grade = WeaponGrade.RARE
+    override val cardColor = SKILL_CARD_COLOR
+    override fun apply(player: Player) {
+        player.currentSkill = skill
+    }
+
+    companion object {
+        val SKILL_CARD_COLOR = Color.rgb(168, 85, 247)
+    }
+}
+
 class CardPool {
     private val statCards: List<RewardCard> = listOf(
         AttackStatCard,
@@ -69,8 +84,15 @@ class CardPool {
         WeaponCard(HomingWeapon,  WeaponGrade.EPIC),
     )
 
-    fun pickThree(): List<RewardCard> {
-        val pool = (statCards + weaponCards).toMutableList()
+    private val skillCards: List<SkillCard> = listOf(
+        SkillCard(HealSkill),
+        SkillCard(ExplosionSkill),
+        SkillCard(BuffSkill),
+    )
+
+    fun pickThree(currentSkill: Skill?): List<RewardCard> {
+        val availableSkillCards = skillCards.filter { it.skill !== currentSkill }
+        val pool = (statCards + weaponCards + availableSkillCards).toMutableList()
         val result = mutableListOf<RewardCard>()
         while (result.size < 3 && pool.isNotEmpty()) {
             val byGrade = pool.groupBy { it.grade }

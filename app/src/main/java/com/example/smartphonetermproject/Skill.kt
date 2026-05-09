@@ -7,6 +7,7 @@ sealed class Skill(
     val effect: String,
     val color: Int,
     val cooldownTime: Float,
+    val iconResId: Int,
 ) {
     open fun canActivate(player: Player): Boolean = true
     abstract fun activate(player: Player, scene: MainScene)
@@ -25,6 +26,7 @@ object ExplosionSkill : Skill(
     effect = "스킬 : 폭발",
     color = Color.rgb(245, 130, 60),
     cooldownTime = 12f,
+    iconResId = R.mipmap.skill_explosion_icon,
 ) {
     private const val RADIUS = 480f
     private const val DAMAGE = 50
@@ -49,6 +51,7 @@ object HealSkill : Skill(
     effect = "스킬 : 힐",
     color = Color.rgb(60, 200, 120),
     cooldownTime = 10f,
+    iconResId = R.mipmap.skill_heal_icon,
 ) {
     private const val HEAL_AMOUNT = 5
 
@@ -71,6 +74,7 @@ object BuffSkill : Skill(
     effect = "스킬 : 광폭화",
     color = Color.rgb(230, 90, 140),
     cooldownTime = 18f,
+    iconResId = R.mipmap.skill_buff_icon,
 ) {
     private const val ATTACK_BUFF = 3f
     private const val FIRE_RATE_BUFF = 2f

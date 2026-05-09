@@ -24,6 +24,11 @@ class SkillButton(
         centerX + radius, centerY + radius,
     )
 
+    private val iconRect = run {
+        val half = radius * ICON_FILL_RATIO
+        RectF(centerX - half, centerY - half, centerX + half, centerY + half)
+    }
+
     private val emptyFillPaint = Paint().apply {
         style = Paint.Style.FILL; color = Color.argb(120, 60, 60, 80); isAntiAlias = true
     }
@@ -95,6 +100,10 @@ class SkillButton(
         }
         baseFillPaint.color = skill.color
         canvas.drawCircle(centerX, centerY, radius, baseFillPaint)
+        if (skill.iconResId != 0) {
+            val bmp = gctx.res.getBitmap(skill.iconResId)
+            canvas.drawBitmap(bmp, null, iconRect, null)
+        }
         if (cooldown > 0f) {
             val ratio = (cooldown / skill.cooldownTime).coerceIn(0f, 1f)
             canvas.drawArc(rectF, -90f, ratio * 360f, true, cooldownPaint)
@@ -104,7 +113,7 @@ class SkillButton(
         if (cooldown > 0f) {
             val secs = "%.1f".format(cooldown)
             canvas.drawText(secs, centerX, centerY - cooldownBaselineOffset, cooldownTextPaint)
-        } else {
+        } else if (skill.iconResId == 0) {
             canvas.drawText(skill.displayName, centerX, centerY - labelBaselineOffset, labelPaint)
         }
     }
@@ -138,5 +147,6 @@ class SkillButton(
         private const val COOLDOWN_TEXT_SIZE = 60f
         private const val EMPTY_LABEL_SIZE = 28f
         private const val EMPTY_LINE_GAP = 4f
+        private const val ICON_FILL_RATIO = 0.66f
     }
 }
