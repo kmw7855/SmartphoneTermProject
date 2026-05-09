@@ -23,7 +23,14 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     val dead: Boolean
         get() = life <= 0
 
-    var currentSkill: Skill? = HealSkill
+    var currentSkill: Skill? = BuffSkill
+
+    var attackBuffMul = 1f
+        private set
+    var fireRateBuffMul = 1f
+        private set
+    var buffRemaining = 0f
+        private set
 
     private val minX = PLAYER_WIDTH / 2f
     private val maxX = gctx.metrics.width - PLAYER_WIDTH / 2f
@@ -61,7 +68,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     }
 
     fun calculatePower(): Pair<Int, Boolean> {
-        val basePower = (Bullet.DAMAGE * attackMul).toInt().coerceAtLeast(1)
+        val basePower = (Bullet.DAMAGE * attackMul * attackBuffMul).toInt().coerceAtLeast(1)
         val isCrit = Random.nextFloat() < critRate
         val power = if (isCrit) basePower * CRIT_MUL else basePower
         return power to isCrit
@@ -69,6 +76,22 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
 
     fun heal(amount: Int) {
         life = (life + amount).coerceAtMost(MAX_LIFE)
+    }
+
+    fun applyBuff(attackMul: Float, fireRateMul: Float, duration: Float) {
+        attackBuffMul = attackMul
+        fireRateBuffMul = fireRateMul
+        buffRemaining = duration
+    }
+
+    private fun tickBuff(gctx: GameContext) {
+        if (buffRemaining <= 0f) return
+        buffRemaining -= gctx.frameTime
+        if (buffRemaining <= 0f) {
+            buffRemaining = 0f
+            attackBuffMul = 1f
+            fireRateBuffMul = 1f
+        }
     }
 
     init {
@@ -92,6 +115,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         y = y.coerceIn(minY, maxY)
         syncDstRect()
         updateCollisionRect()
+        tickBuff(gctx)
         fireBullet(gctx)
     }
 
@@ -104,7 +128,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     private fun fireBullet(gctx: GameContext) {
         fireCooldown -= gctx.frameTime
         if (fireCooldown > 0f) return
-        fireCooldown = currentWeapon.fireInterval / fireRateMul
+        fireCooldown = currentWeapon.fireInterval / (fireRateMul * fireRateBuffMul)
         val scene = gctx.scene as? MainScene ?: return
         currentWeapon.fire(this, scene, gctx, weaponGrade)
     }

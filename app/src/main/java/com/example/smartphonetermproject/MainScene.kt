@@ -109,9 +109,11 @@ open class MainScene(
         fps: Float,
         duration: Float,
         frameCount: Int = 0,
+        loops: Boolean = false,
+        followTarget: Player? = null,
     ) {
         world.add(
-            SkillVfx.spawn(gctx, resId, x, y, size, fps, duration, frameCount),
+            SkillVfx.spawn(gctx, resId, x, y, size, fps, duration, frameCount, loops, followTarget),
             Layer.VFX,
         )
     }

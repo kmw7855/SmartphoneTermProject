@@ -65,3 +65,27 @@ object HealSkill : Skill(
         )
     }
 }
+
+object BuffSkill : Skill(
+    displayName = "광폭화",
+    effect = "스킬 : 광폭화",
+    color = Color.rgb(230, 90, 140),
+    cooldownTime = 18f,
+) {
+    private const val ATTACK_BUFF = 3f
+    private const val FIRE_RATE_BUFF = 2f
+    private const val DURATION = 7f
+
+    override fun activate(player: Player, scene: MainScene) {
+        player.applyBuff(ATTACK_BUFF, FIRE_RATE_BUFF, DURATION)
+        scene.spawnVfx(
+            resId = R.mipmap.skill_buff,
+            x = player.x, y = player.y,
+            size = VfxSpec.SIZE_BUFF,
+            fps = VfxSpec.FPS,
+            duration = DURATION,
+            loops = true,
+            followTarget = player,
+        )
+    }
+}
