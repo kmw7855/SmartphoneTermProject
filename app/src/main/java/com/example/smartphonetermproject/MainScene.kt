@@ -160,9 +160,9 @@ open class MainScene(
         private const val BACKGROUND_SPEED = 80f
         private const val BOSS_ENTER_TIME = 15f
         private const val STARS_SPEED = 150f
-        private const val SKILL_BUTTON_RADIUS = 80f
-        private const val SKILL_BUTTON_MARGIN_RIGHT = 110f
-        private const val SKILL_BUTTON_MARGIN_BOTTOM = 200f
+        private const val SKILL_BUTTON_RADIUS = 60f
+        private const val SKILL_BUTTON_MARGIN_RIGHT = 90f
+        private const val SKILL_BUTTON_MARGIN_BOTTOM = 180f
 
         private const val SPAWN_RATE_MAX = 5f
         private const val ENEMY_STAT_MAX = 4f

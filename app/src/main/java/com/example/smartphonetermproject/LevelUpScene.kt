@@ -60,13 +60,6 @@ class LevelUpScene(
         isAntiAlias = true
         isFakeBoldText = true
     }
-    private val skillTagPaint = Paint().apply {
-        color = Color.rgb(220, 200, 255)
-        textSize = CARD_TEXT_SIZE * 0.9f
-        textAlign = Paint.Align.CENTER
-        isAntiAlias = true
-        isFakeBoldText = true
-    }
 
     override fun update(gctx: GameContext) {}
 
@@ -87,12 +80,15 @@ class LevelUpScene(
     }
 
     private fun drawStatCard(canvas: Canvas, rect: RectF, card: RewardCard) {
+        gradeTextPaint.color = card.grade.cardColor
+        drawFitText(canvas, card.grade.displayName,
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.30f, gradeTextPaint, GRADE_TEXT_SIZE)
         drawFitText(canvas, card.title,  rect.centerX(), rect.centerY() - CARD_TEXT_SIZE * 0.3f, cardTextPaint, CARD_TEXT_SIZE)
         drawFitText(canvas, card.effect, rect.centerX(), rect.centerY() + CARD_TEXT_SIZE * 0.9f, cardTextPaint, CARD_TEXT_SIZE)
     }
 
     private fun drawSkillCard(canvas: Canvas, rect: RectF, card: SkillCard) {
-        val iconRadius = CARD_WIDTH * 0.22f
+        val iconRadius = CARD_WIDTH * 0.275f
         val iconCx = rect.centerX()
         val iconCy = rect.top + CARD_HEIGHT * 0.30f
 
@@ -115,12 +111,11 @@ class LevelUpScene(
             canvas.drawText(card.skill.displayName, iconCx, iconCy - (fm.ascent + fm.descent) / 2f, skillIconLabelPaint)
         }
 
-        drawFitText(canvas, "SKILL",
-            rect.centerX(), rect.top + CARD_HEIGHT * 0.55f, skillTagPaint, CARD_TEXT_SIZE * 0.9f)
-        drawFitText(canvas, card.skill.displayName,
-            rect.centerX(), rect.top + CARD_HEIGHT * 0.70f, cardTextPaint, CARD_TEXT_SIZE)
+        gradeTextPaint.color = card.grade.cardColor
+        drawFitText(canvas, card.grade.displayName,
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.55f, gradeTextPaint, GRADE_TEXT_SIZE)
         drawFitText(canvas, card.effect,
-            rect.centerX(), rect.top + CARD_HEIGHT * 0.85f, cardTextPaint, CARD_TEXT_SIZE)
+            rect.centerX(), rect.top + CARD_HEIGHT * 0.70f, cardTextPaint, CARD_TEXT_SIZE)
     }
 
     private fun drawWeaponCard(canvas: Canvas, rect: RectF, card: WeaponCard) {

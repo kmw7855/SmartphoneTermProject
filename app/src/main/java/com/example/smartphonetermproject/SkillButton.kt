@@ -24,16 +24,14 @@ class SkillButton(
         centerX + radius, centerY + radius,
     )
 
+    private val iconCenterY = centerY + radius * ICON_OFFSET_Y_RATIO
     private val iconRect = run {
         val half = radius * ICON_FILL_RATIO
-        RectF(centerX - half, centerY - half, centerX + half, centerY + half)
+        RectF(centerX - half, iconCenterY - half, centerX + half, iconCenterY + half)
     }
 
     private val emptyFillPaint = Paint().apply {
         style = Paint.Style.FILL; color = Color.argb(120, 60, 60, 80); isAntiAlias = true
-    }
-    private val baseFillPaint = Paint().apply {
-        style = Paint.Style.FILL; isAntiAlias = true
     }
     private val cooldownPaint = Paint().apply {
         style = Paint.Style.FILL; color = Color.argb(170, 0, 0, 0); isAntiAlias = true
@@ -62,6 +60,14 @@ class SkillButton(
         isFakeBoldText = true
     }
 
+    private val slotTextPaint = Paint().apply {
+        color = Color.WHITE
+        textSize = SLOT_TEXT_SIZE
+        textAlign = Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    private val slotTextBaselineY: Float
+
     private val labelBaselineOffset = (labelPaint.fontMetrics.descent + labelPaint.fontMetrics.ascent) / 2f
     private val cooldownBaselineOffset = (cooldownTextPaint.fontMetrics.descent + cooldownTextPaint.fontMetrics.ascent) / 2f
 
@@ -75,6 +81,9 @@ class SkillButton(
         val firstAscentY = centerY - totalHeight / 2f
         emptyLabelLine1Y = firstAscentY - fm.ascent
         emptyLabelLine2Y = emptyLabelLine1Y + lineHeight + EMPTY_LINE_GAP
+
+        val slotFm = slotTextPaint.fontMetrics
+        slotTextBaselineY = centerY + radius * SLOT_TEXT_BOTTOM_RATIO - slotFm.descent
     }
 
     override fun update(gctx: GameContext) {
@@ -98,8 +107,8 @@ class SkillButton(
             canvas.drawText("없음", centerX, emptyLabelLine2Y, emptyLabelPaint)
             return
         }
-        baseFillPaint.color = skill.color
-        canvas.drawCircle(centerX, centerY, radius, baseFillPaint)
+
+        canvas.drawCircle(centerX, centerY, radius, emptyFillPaint)
         if (skill.iconResId != 0) {
             val bmp = gctx.res.getBitmap(skill.iconResId)
             canvas.drawBitmap(bmp, null, iconRect, null)
@@ -112,10 +121,11 @@ class SkillButton(
 
         if (cooldown > 0f) {
             val secs = "%.1f".format(cooldown)
-            canvas.drawText(secs, centerX, centerY - cooldownBaselineOffset, cooldownTextPaint)
+            canvas.drawText(secs, centerX, iconCenterY - cooldownBaselineOffset, cooldownTextPaint)
         } else if (skill.iconResId == 0) {
-            canvas.drawText(skill.displayName, centerX, centerY - labelBaselineOffset, labelPaint)
+            canvas.drawText(skill.displayName, centerX, iconCenterY - labelBaselineOffset, labelPaint)
         }
+        canvas.drawText(skill.displayName, centerX, slotTextBaselineY, slotTextPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -143,10 +153,13 @@ class SkillButton(
     }
 
     companion object {
-        private const val LABEL_TEXT_SIZE = 40f
-        private const val COOLDOWN_TEXT_SIZE = 60f
-        private const val EMPTY_LABEL_SIZE = 28f
-        private const val EMPTY_LINE_GAP = 4f
-        private const val ICON_FILL_RATIO = 0.66f
+        private const val LABEL_TEXT_SIZE = 32f
+        private const val COOLDOWN_TEXT_SIZE = 36f
+        private const val EMPTY_LABEL_SIZE = 26f
+        private const val EMPTY_LINE_GAP = 2f
+        private const val ICON_FILL_RATIO = 0.50f
+        private const val ICON_OFFSET_Y_RATIO = -0.30f
+        private const val SLOT_TEXT_SIZE = 22f
+        private const val SLOT_TEXT_BOTTOM_RATIO = 0.70f
     }
 }

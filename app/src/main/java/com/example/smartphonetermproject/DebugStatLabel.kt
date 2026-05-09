@@ -9,23 +9,27 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.util.LabelUtil
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 
 class DebugStatLabel(private val gctx: GameContext) : IGameObject {
-    private val label = LabelUtil(TEXT_SIZE, Color.WHITE, Paint.Align.LEFT, Typeface.MONOSPACE)
+    private val normalLabel = LabelUtil(TEXT_SIZE, Color.WHITE, Paint.Align.LEFT, Typeface.MONOSPACE)
+    private val buffedLabel = LabelUtil(TEXT_SIZE, Color.rgb(255, 80, 80), Paint.Align.LEFT, Typeface.MONOSPACE)
     private val drawY = gctx.metrics.height - BOTTOM_MARGIN
 
     override fun update(gctx: GameContext) {}
 
     override fun draw(canvas: Canvas) {
         val player = (gctx.scene as? MainScene)?.player ?: return
-        val text = "ATK x%.2f RATE x%.2f CRIT %d%%".format(
-            player.attackMul,
-            player.fireRateMul,
+        val effectiveAtk = player.attackMul * player.attackBuffMul
+        val effectiveRate = player.fireRateMul * player.fireRateBuffMul
+        val text = "ATK x%.2f ATTACKSPEED x%.2f CRIT %d%%".format(
+            effectiveAtk,
+            effectiveRate,
             (player.critRate * 100).toInt(),
         )
+        val label = if (player.buffRemaining > 0f) buffedLabel else normalLabel
         label.draw(canvas, text, MARGIN_X, drawY)
     }
 
     companion object {
-        private const val TEXT_SIZE = 40f
+        private const val TEXT_SIZE = 36f
         private const val MARGIN_X = 30f
         private const val BOTTOM_MARGIN = 14f
     }

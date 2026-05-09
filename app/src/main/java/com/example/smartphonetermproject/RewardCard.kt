@@ -1,6 +1,5 @@
 package com.example.smartphonetermproject
 
-import android.graphics.Color
 import kotlin.random.Random
 
 sealed class RewardCard {
@@ -57,14 +56,10 @@ class WeaponCard(
 class SkillCard(val skill: Skill) : RewardCard() {
     override val title = skill.displayName
     override val effect = skill.effect
-    override val grade = WeaponGrade.RARE
-    override val cardColor = SKILL_CARD_COLOR
+    override val grade = WeaponGrade.EPIC
+    override val cardColor = grade.cardColor
     override fun apply(player: Player) {
         player.currentSkill = skill
-    }
-
-    companion object {
-        val SKILL_CARD_COLOR = Color.rgb(168, 85, 247)
     }
 }
 
