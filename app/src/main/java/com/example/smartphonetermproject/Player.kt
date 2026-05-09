@@ -23,6 +23,8 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     val dead: Boolean
         get() = life <= 0
 
+    var currentSkill: Skill? = ExplosionSkill
+
     private val minX = PLAYER_WIDTH / 2f
     private val maxX = gctx.metrics.width - PLAYER_WIDTH / 2f
     private val minY = PLAYER_HEIGHT / 2f

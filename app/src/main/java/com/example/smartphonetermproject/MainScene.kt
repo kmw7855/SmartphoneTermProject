@@ -1,5 +1,6 @@
 package com.example.smartphonetermproject
 
+import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IGameObject
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.VertScrollBackground
 import kr.ac.tukorea.ge.spgp2026.a2dg.scene.Scene
 import kr.ac.tukorea.ge.spgp2026.a2dg.scene.World
@@ -21,7 +22,9 @@ open class MainScene(
         CONTROLLER,
         STARS,
         EXP_ORB,
+        VFX,
         UI,
+        SKILL_BUTTON,
     }
 
     private val background = VertScrollBackground(gctx, backgroundResId, BACKGROUND_SPEED)
@@ -55,6 +58,13 @@ open class MainScene(
 
     val cardPool = CardPool()
 
+    private val skillButton = SkillButton(
+        gctx,
+        centerX = gctx.metrics.width - SKILL_BUTTON_MARGIN_RIGHT,
+        centerY = gctx.metrics.height - SKILL_BUTTON_MARGIN_BOTTOM,
+        radius = SKILL_BUTTON_RADIUS,
+    )
+
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
         add(player, Layer.PLAYER)
@@ -66,6 +76,7 @@ open class MainScene(
         add(playerHpHud, Layer.UI)
         add(expLabel, Layer.UI)
         add(debugStatLabel, Layer.UI)
+        add(skillButton, Layer.SKILL_BUTTON)
     }
 
     override fun update(gctx: GameContext) {
@@ -90,7 +101,50 @@ open class MainScene(
         nextPromptAt += BOSS_ENTER_TIME
     }
 
+    fun spawnVfx(
+        resId: Int,
+        x: Float,
+        y: Float,
+        size: Float,
+        fps: Float,
+        duration: Float,
+        frameCount: Int = 0,
+    ) {
+        world.add(
+            SkillVfx.spawn(gctx, resId, x, y, size, fps, duration, frameCount),
+            Layer.VFX,
+        )
+    }
+
+    fun applyAreaDamage(
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        damage: Int,
+        onHit: ((hitX: Float, hitY: Float) -> Unit)? = null,
+    ) {
+        val r2 = radius * radius
+        world.forEachReversedAt(Layer.ENEMY) { obj ->
+            val enemy = obj as? Enemy ?: return@forEachReversedAt
+            val dx = enemy.x - centerX
+            val dy = enemy.y - centerY
+            if (dx * dx + dy * dy > r2) return@forEachReversedAt
+            enemy.decreaseLife(damage)
+            spawnDamagePopup(enemy.x, enemy.y, damage, true)
+            if (enemy.dead) {
+                enemy.startDying(this)
+                addScore(enemy.score)
+            }
+            onHit?.invoke(enemy.x, enemy.y)
+        }
+    }
+
+    override fun touchObjects(): List<IGameObject> {
+        return world.objectsAt(Layer.SKILL_BUTTON)
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (super.onTouchEvent(event)) return true
         return player.onTouchEvent(event)
     }
 
@@ -100,5 +154,8 @@ open class MainScene(
         private const val BACKGROUND_SPEED = 80f
         private const val BOSS_ENTER_TIME = 15f
         private const val STARS_SPEED = 150f
+        private const val SKILL_BUTTON_RADIUS = 80f
+        private const val SKILL_BUTTON_MARGIN_RIGHT = 110f
+        private const val SKILL_BUTTON_MARGIN_BOTTOM = 200f
     }
 }
