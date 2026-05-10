@@ -92,7 +92,8 @@ flowchart TD
 > 점선 = transparent overlay 의 push/pop, 굵은 실선 = `change()` 로 root 교체.
 
   - **LevelUpScene**: `player.exp >= maxExp` 가 되는 프레임에 자동 push.
-  - **BossEntryScene**: `elapsedSec` 가 `BOSS_ENTER_TIME` (현재 테스트 값 15s) 에 도달할 때마다 push.(이동안 `update()` 가 호출되지 않아 진행 일시 정지 )
+  - **BossEntryScene**: `elapsedSec` 가 `BOSS_ENTER_TIME` (현재 테스트 값 15s) 에 도달할 때마다 push.
+  - **오버레이시 일시정지** : 오버레이가 떠 있는 동안엔 `update()` 가 호출되지 않아 진행 일시 정지 
 - **BossScene**:  진입은 `push` 가 아니라 `change()` 로 root 자체를 교체하기 때문에 일반 스테이지로 되돌아갈 수 없다.
 
 ---
