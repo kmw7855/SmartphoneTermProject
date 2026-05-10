@@ -91,10 +91,9 @@ flowchart TD
 
 > 점선 = transparent overlay 의 push/pop, 굵은 실선 = `change()` 로 root 교체.
 
-- **MainScene** 이 root. 두 종류의 transparent overlay 가 위에 push 된다.
-  - **LevelUpScene**: `player.exp >= maxExp` 가 되는 프레임에 자동 push. 카드 선택 후 pop + 보상 적용.
-  - **BossEntryScene**: `elapsedSec` 가 `BOSS_ENTER_TIME` (현재 테스트 값 15s) 에 도달할 때마다 push. overlay 가 위에 있는 동안은 MainScene 의 `update()` 가 호출되지 않으므로 게임 시간 (`elapsedSec`) 과 적 스폰도 함께 정지.
-- **BossScene** 은 `MainScene` 을 상속해 배경/플래그만 다르게 두고 같은 게임 루프를 재사용. 진입은 `push` 가 아니라 `change()` 로 root 자체를 교체하기 때문에 일반 스테이지로 되돌아갈 수 없다.
+  - **LevelUpScene**: `player.exp >= maxExp` 가 되는 프레임에 자동 push.
+  - **BossEntryScene**: `elapsedSec` 가 `BOSS_ENTER_TIME` (현재 테스트 값 15s) 에 도달할 때마다 push.(이동안 `update()` 가 호출되지 않아 진행 일시 정지 )
+- **BossScene**:  진입은 `push` 가 아니라 `change()` 로 root 자체를 교체하기 때문에 일반 스테이지로 되돌아갈 수 없다.
 
 ---
 
