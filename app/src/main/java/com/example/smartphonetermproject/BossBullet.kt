@@ -23,11 +23,16 @@ class BossBullet private constructor(
         val damage: Int,
         val collisionRatioX: Float = 0.3f,
         val collisionRatioY: Float = 0.7f,
+        val hitVfxResId: Int = R.mipmap.boss_hit_vfx,
     ) {
         SHARD(R.mipmap.boss_bullet_4, 110f, 140f, 1),
+        SHARD_P2(R.mipmap.boss_bullet_2phase_4, 110f, 140f, 2, hitVfxResId = R.mipmap.boss_hit_2phase_vfx),
         SCYTHE(R.mipmap.boss_bullet_3, 150f, 140f, 1),
+        SCYTHE_P2(R.mipmap.boss_bullet_2phase_3, 150f, 140f, 2, hitVfxResId = R.mipmap.boss_hit_2phase_vfx),
         AIMED(R.mipmap.boss_bullet_1, 90f, 160f, 1),
+        AIMED_P2(R.mipmap.boss_bullet_2phase_1_, 90f, 160f, 2, hitVfxResId = R.mipmap.boss_hit_2phase_vfx),
         CORE(R.mipmap.boss_bullet_2, 160f, 160f, 2, collisionRatioX = 0.5f, collisionRatioY = 0.5f),
+        CORE_P2(R.mipmap.boss_bullet_2phase_2, 160f, 160f, 3, collisionRatioX = 0.5f, collisionRatioY = 0.5f, hitVfxResId = R.mipmap.boss_hit_2phase_vfx),
     }
 
     private enum class Move { STRAIGHT, QUAD_BEZIER, SPRAYING }
@@ -85,8 +90,10 @@ class BossBullet private constructor(
         }
 
     init {
-        if (sharedHitBitmap == null) {
-            sharedHitBitmap = gctx.res.getBitmap(R.mipmap.boss_hit_vfx)
+        for (t in Type.entries) {
+            if (!sharedHitBitmaps.containsKey(t.hitVfxResId)) {
+                sharedHitBitmaps[t.hitVfxResId] = gctx.res.getBitmap(t.hitVfxResId)
+            }
         }
     }
 
@@ -241,7 +248,7 @@ class BossBullet private constructor(
 
     override fun draw(canvas: Canvas) {
         if (hitting) {
-            val bmp = sharedHitBitmap ?: return
+            val bmp = sharedHitBitmaps[type.hitVfxResId] ?: return
             val frameW = bmp.width / HIT_FRAME_COUNT
             val elapsed = HIT_DURATION - hitTime
             val frameIndex = (elapsed * HIT_FPS).toInt().coerceIn(0, HIT_FRAME_COUNT - 1)
@@ -287,7 +294,7 @@ class BossBullet private constructor(
         private const val HIT_FRAME_COUNT = 8
         private const val HIT_FPS = 20f
         private const val HIT_DISPLAY_SIZE = 180f
-        private var sharedHitBitmap: Bitmap? = null
+        private val sharedHitBitmaps = mutableMapOf<Int, Bitmap>()
 
         fun get(
             gctx: GameContext,

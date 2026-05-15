@@ -28,8 +28,14 @@ class Boss(
     private val stopY = gctx.metrics.height * STOP_RATIO
 
     private var attackCooldown = 0f
-    private var patternIndex = 0
-    private val attackCycle: List<BossPattern> = listOf(BossPattern.CorePulse)
+    private var lastPatternIndex = -1
+    private val attackCycle: List<BossPattern> = listOf(
+        BossPattern.CrownShard,
+        BossPattern.EmperorScythe,
+        BossPattern.AimedBurst,
+        BossPattern.CorePulse,
+    )
+    private var currentPhase = 1
     private var currentPattern: BossPattern? = null
     private var burstTicksRemaining = 0
     private var burstSubCooldown = 0f
@@ -60,6 +66,7 @@ class Boss(
             transitionRemaining -= gctx.frameTime
             if (!spriteSwapped && transitionRemaining <= TRANSITION_DURATION / 2f) {
                 bitmap = gctx.res.getBitmap(R.mipmap.enemy_boss_2phase)
+                currentPhase = 2
                 spriteSwapped = true
             }
             if (transitionRemaining <= 0f) {
@@ -106,6 +113,7 @@ class Boss(
     private fun endTransition(gctx: GameContext) {
         transitioning = false
         attackCooldown = POST_TRANSITION_DELAY
+        lastPatternIndex = -1
     }
 
     private fun updateAttack(gctx: GameContext) {
@@ -115,12 +123,12 @@ class Boss(
             burstSubCooldown -= gctx.frameTime
             if (burstSubCooldown > 0f) return
             val pattern = currentPattern ?: return
-            pattern.fireTick(gctx, this, scene, burstTickIndex)
+            pattern.fireTick(gctx, this, scene, burstTickIndex, currentPhase)
             burstTickIndex++
             burstTicksRemaining--
-            burstSubCooldown = if (burstTicksRemaining > 0) pattern.burstInterval else 0f
+            burstSubCooldown = if (burstTicksRemaining > 0) pattern.burstInterval(currentPhase) else 0f
             if (burstTicksRemaining == 0) {
-                attackCooldown = pattern.cooldown
+                attackCooldown = pattern.cooldown(currentPhase)
                 currentPattern = null
             }
             return
@@ -128,12 +136,19 @@ class Boss(
 
         attackCooldown -= gctx.frameTime
         if (attackCooldown > 0f) return
-        val pattern = attackCycle[patternIndex % attackCycle.size]
+        val nextIndex = pickNextPatternIndex()
+        val pattern = attackCycle[nextIndex]
         currentPattern = pattern
-        burstTicksRemaining = pattern.burstCount
+        burstTicksRemaining = pattern.burstCount(currentPhase)
         burstSubCooldown = 0f
         burstTickIndex = 0
-        patternIndex++
+        lastPatternIndex = nextIndex
+    }
+
+    private fun pickNextPatternIndex(): Int {
+        if (attackCycle.size <= 1) return 0
+        val candidates = attackCycle.indices.filter { it != lastPatternIndex }
+        return candidates.random()
     }
 
     private fun updateCollisionRect() {
