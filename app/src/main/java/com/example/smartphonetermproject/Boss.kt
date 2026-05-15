@@ -27,6 +27,10 @@ class Boss(
         private set
     private val stopY = gctx.metrics.height * STOP_RATIO
 
+    private var attackCooldown = 0f
+    private var patternIndex = 0
+    private val attackCycle: List<BossPattern> = listOf(BossPattern.CrownShard)
+
     init {
         syncDstRect()
         updateCollisionRect()
@@ -44,12 +48,23 @@ class Boss(
                 if (y >= stopY) {
                     y = stopY
                     phase = Phase.ATTACKING
+                    attackCooldown = INITIAL_ATTACK_DELAY
                 }
             }
-            Phase.ATTACKING -> { }
+            Phase.ATTACKING -> updateAttack(gctx)
         }
         syncDstRect()
         updateCollisionRect()
+    }
+
+    private fun updateAttack(gctx: GameContext) {
+        attackCooldown -= gctx.frameTime
+        if (attackCooldown > 0f) return
+        val scene = gctx.scene as? MainScene ?: return
+        val pattern = attackCycle[patternIndex % attackCycle.size]
+        pattern.fire(gctx, this, scene)
+        attackCooldown = pattern.cooldown
+        patternIndex++
     }
 
     private fun updateCollisionRect() {
@@ -66,9 +81,10 @@ class Boss(
         const val HIT_DAMAGE = 5
         private const val BOSS_WIDTH = 540f
         private const val BOSS_HEIGHT = 540f
-        private const val MAX_LIFE = 30
+        private const val MAX_LIFE = 300
         private const val STOP_RATIO = 0.22f
         private const val APPROACH_SPEED = 180f
         private const val COLLISION_INSET_RATIO = 0.75f
+        private const val INITIAL_ATTACK_DELAY = 0.8f
     }
 }
