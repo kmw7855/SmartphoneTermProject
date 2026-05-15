@@ -33,6 +33,11 @@ class Boss(
     }
 
     override fun update(gctx: GameContext) {
+        if (dead) {
+            val scene = gctx.scene as? MainScene ?: return
+            scene.world.remove(this, MainScene.Layer.ENEMY)
+            return
+        }
         when (phase) {
             Phase.APPROACHING -> {
                 y += APPROACH_SPEED * gctx.frameTime
@@ -58,9 +63,10 @@ class Boss(
     }
 
     companion object {
+        const val HIT_DAMAGE = 5
         private const val BOSS_WIDTH = 540f
         private const val BOSS_HEIGHT = 540f
-        private const val MAX_LIFE = 5000
+        private const val MAX_LIFE = 30
         private const val STOP_RATIO = 0.22f
         private const val APPROACH_SPEED = 180f
         private const val COLLISION_INSET_RATIO = 0.75f

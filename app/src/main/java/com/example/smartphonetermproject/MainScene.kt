@@ -131,17 +131,29 @@ open class MainScene(
     ) {
         val r2 = radius * radius
         world.forEachReversedAt(Layer.ENEMY) { obj ->
-            val enemy = obj as? Enemy ?: return@forEachReversedAt
-            val dx = enemy.x - centerX
-            val dy = enemy.y - centerY
-            if (dx * dx + dy * dy > r2) return@forEachReversedAt
-            enemy.decreaseLife(damage)
-            spawnDamagePopup(enemy.x, enemy.y, damage, true)
-            if (enemy.dead) {
-                enemy.startDying(this)
-                addScore(enemy.score)
+            when (obj) {
+                is Enemy -> {
+                    val dx = obj.x - centerX
+                    val dy = obj.y - centerY
+                    if (dx * dx + dy * dy > r2) return@forEachReversedAt
+                    obj.decreaseLife(damage)
+                    spawnDamagePopup(obj.x, obj.y, damage, true)
+                    if (obj.dead) {
+                        obj.startDying(this)
+                        addScore(obj.score)
+                    }
+                    onHit?.invoke(obj.x, obj.y)
+                }
+                is Boss -> {
+                    if (obj.dead) return@forEachReversedAt
+                    val dx = obj.x - centerX
+                    val dy = obj.y - centerY
+                    if (dx * dx + dy * dy > r2) return@forEachReversedAt
+                    obj.decreaseLife(damage)
+                    spawnDamagePopup(obj.x, obj.y, damage, true)
+                    onHit?.invoke(obj.x, obj.y)
+                }
             }
-            onHit?.invoke(enemy.x, enemy.y)
         }
     }
 

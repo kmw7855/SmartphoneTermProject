@@ -54,15 +54,27 @@ class LaserBeam private constructor(
         if (tickCooldown <= 0f) {
             tickCooldown = LASER_TICK_INTERVAL
             scene.world.forEachReversedAt(MainScene.Layer.ENEMY) { enemyObj ->
-                val enemy = enemyObj as? Enemy ?: return@forEachReversedAt
-                if (collidesWith(enemy)) {
-                    val (rawPower, isCrit) = player.calculatePower()
-                    val tickPower = (rawPower / LASER_DAMAGE_DIVISOR).coerceAtLeast(1)
-                    enemy.decreaseLife(tickPower)
-                    scene.spawnDamagePopup(enemy.x, enemy.y, tickPower, isCrit)
-                    if (enemy.dead) {
-                        enemy.startDying(scene)
-                        scene.addScore(enemy.score)
+                when (enemyObj) {
+                    is Enemy -> {
+                        if (collidesWith(enemyObj)) {
+                            val (rawPower, isCrit) = player.calculatePower()
+                            val tickPower = (rawPower / LASER_DAMAGE_DIVISOR).coerceAtLeast(1)
+                            enemyObj.decreaseLife(tickPower)
+                            scene.spawnDamagePopup(enemyObj.x, enemyObj.y, tickPower, isCrit)
+                            if (enemyObj.dead) {
+                                enemyObj.startDying(scene)
+                                scene.addScore(enemyObj.score)
+                            }
+                        }
+                    }
+                    is Boss -> {
+                        if (enemyObj.dead) return@forEachReversedAt
+                        if (collidesWith(enemyObj)) {
+                            val (rawPower, isCrit) = player.calculatePower()
+                            val tickPower = (rawPower / LASER_DAMAGE_DIVISOR).coerceAtLeast(1)
+                            enemyObj.decreaseLife(tickPower)
+                            scene.spawnDamagePopup(enemyObj.x, enemyObj.y, tickPower, isCrit)
+                        }
                     }
                 }
             }

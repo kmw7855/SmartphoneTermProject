@@ -42,27 +42,47 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
         val player = scene.player
 
         scene.world.forEachReversedAt(MainScene.Layer.ENEMY) { enemyObject ->
-            val enemy = enemyObject as? Enemy ?: return@forEachReversedAt
+            when (enemyObject) {
+                is Enemy -> {
+                    if (player.collidesWith(enemyObject)) {
+                        player.decreaseLife(enemyObject.hitDamage)
+                        enemyObject.startDying(scene)
+                        if (player.dead) {
+                            triggerGameOver()
+                            return
+                        }
+                        return@forEachReversedAt
+                    }
 
-            if (player.collidesWith(enemy)) {
-                player.decreaseLife(enemy.hitDamage)
-                enemy.startDying(scene)
-                if (player.dead) {
-                    triggerGameOver()
-                    return
+                    scene.world.forEachReversedAt(MainScene.Layer.BULLET) { bulletObject ->
+                        val bullet = bulletObject as? Bullet ?: return@forEachReversedAt
+                        if (bullet.collidesWith(enemyObject)) {
+                            bullet.startHitting()
+                            enemyObject.decreaseLife(bullet.power)
+                            spawnPopup(enemyObject.x, enemyObject.y, bullet.power, bullet.isCrit)
+                            if (enemyObject.dead) {
+                                enemyObject.startDying(scene)
+                                scene.addScore(enemyObject.score)
+                            }
+                        }
+                    }
                 }
-                return@forEachReversedAt
-            }
-
-            scene.world.forEachReversedAt(MainScene.Layer.BULLET) { bulletObject ->
-                val bullet = bulletObject as? Bullet ?: return@forEachReversedAt
-                if (bullet.collidesWith(enemy)) {
-                    bullet.startHitting()
-                    enemy.decreaseLife(bullet.power)
-                    spawnPopup(enemy.x, enemy.y, bullet.power, bullet.isCrit)
-                    if (enemy.dead) {
-                        enemy.startDying(scene)
-                        scene.addScore(enemy.score)
+                is Boss -> {
+                    if (enemyObject.dead) return@forEachReversedAt
+                    if (player.collidesWith(enemyObject)) {
+                        player.decreaseLife(Boss.HIT_DAMAGE)
+                        if (player.dead) {
+                            triggerGameOver()
+                            return
+                        }
+                    }
+                    scene.world.forEachReversedAt(MainScene.Layer.BULLET) { bulletObject ->
+                        val bullet = bulletObject as? Bullet ?: return@forEachReversedAt
+                        if (bullet.collidesWith(enemyObject)) {
+                            bullet.startHitting()
+                            enemyObject.decreaseLife(bullet.power)
+                            spawnPopup(enemyObject.x, enemyObject.y, bullet.power, bullet.isCrit)
+                        }
                     }
                 }
             }

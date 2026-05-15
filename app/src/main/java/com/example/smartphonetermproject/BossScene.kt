@@ -5,7 +5,11 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 class BossScene(gctx: GameContext) :
     MainScene(gctx, R.mipmap.boss_bg, isBossStage = true) {
 
+    val boss = Boss(gctx)
+
     init {
-        world.add(Boss(gctx), Layer.ENEMY)
+        world.add(boss, Layer.ENEMY)
+        world.add(BossHpHud(gctx, boss), Layer.UI)
+        world.add(BossClearLabel(gctx, boss), Layer.UI)
     }
 }
