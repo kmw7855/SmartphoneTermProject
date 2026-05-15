@@ -2,6 +2,7 @@ package com.example.smartphonetermproject
 
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -37,6 +38,34 @@ sealed class BossPattern {
         private const val COUNT = 5
         private const val SPEED = 450f
         private const val SPREAD_DEG = 60f
+        private const val MUZZLE_Y_RATIO = 0.6f
+    }
+
+    object AimedBurst : BossPattern() {
+        override val cooldown: Float = COOLDOWN
+        override val burstCount: Int = VOLLEY_COUNT
+        override val burstInterval: Float = BURST_INTERVAL
+
+        override fun fireTick(gctx: GameContext, boss: Boss, scene: MainScene, tickIndex: Int) {
+            val muzzleX = boss.x
+            val muzzleY = boss.y + boss.height / 2f * MUZZLE_Y_RATIO
+            val targetX = scene.player.x
+            val targetY = scene.player.y
+            val dx = targetX - muzzleX
+            val dy = targetY - muzzleY
+            val len = hypot(dx, dy)
+            val vx = if (len < 1f) 0f else dx / len * SPEED
+            val vy = if (len < 1f) SPEED else dy / len * SPEED
+            scene.world.add(
+                BossBullet.get(gctx, muzzleX, muzzleY, vx, vy, BossBullet.Type.AIMED),
+                MainScene.Layer.ENEMY_BULLET,
+            )
+        }
+
+        private const val COOLDOWN = 2.8f
+        private const val VOLLEY_COUNT = 7
+        private const val BURST_INTERVAL = 0.12f
+        private const val SPEED = 700f
         private const val MUZZLE_Y_RATIO = 0.6f
     }
 

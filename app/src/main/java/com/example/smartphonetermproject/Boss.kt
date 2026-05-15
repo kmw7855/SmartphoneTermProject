@@ -29,7 +29,7 @@ class Boss(
 
     private var attackCooldown = 0f
     private var patternIndex = 0
-    private val attackCycle: List<BossPattern> = listOf(BossPattern.EmperorScythe)
+    private val attackCycle: List<BossPattern> = listOf(BossPattern.AimedBurst)
     private var currentPattern: BossPattern? = null
     private var burstTicksRemaining = 0
     private var burstSubCooldown = 0f
