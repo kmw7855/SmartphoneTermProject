@@ -35,6 +35,12 @@ class Boss(
     private var burstSubCooldown = 0f
     private var burstTickIndex = 0
 
+    private var phase2Triggered = false
+    private var transitioning = false
+    private var transitionRemaining = 0f
+    private var pendingTransition = false
+    private var spriteSwapped = false
+
     init {
         syncDstRect()
         updateCollisionRect()
@@ -44,6 +50,23 @@ class Boss(
         if (dead) {
             val scene = gctx.scene as? MainScene ?: return
             scene.world.remove(this, MainScene.Layer.ENEMY)
+            return
+        }
+        if (pendingTransition) {
+            pendingTransition = false
+            startTransition(gctx)
+        }
+        if (transitioning) {
+            transitionRemaining -= gctx.frameTime
+            if (!spriteSwapped && transitionRemaining <= TRANSITION_DURATION / 2f) {
+                bitmap = gctx.res.getBitmap(R.mipmap.enemy_boss_2phase)
+                spriteSwapped = true
+            }
+            if (transitionRemaining <= 0f) {
+                endTransition(gctx)
+            }
+            syncDstRect()
+            updateCollisionRect()
             return
         }
         when (phase) {
@@ -59,6 +82,30 @@ class Boss(
         }
         syncDstRect()
         updateCollisionRect()
+    }
+
+    private fun startTransition(gctx: GameContext) {
+        phase2Triggered = true
+        transitioning = true
+        transitionRemaining = TRANSITION_DURATION
+        spriteSwapped = false
+        currentPattern = null
+        burstTicksRemaining = 0
+        burstSubCooldown = 0f
+        val scene = gctx.scene as? MainScene ?: return
+        scene.spawnVfx(
+            R.mipmap.boss_phase_change,
+            x, y,
+            TRANSITION_VFX_SIZE,
+            TRANSITION_FPS,
+            TRANSITION_DURATION,
+            frameCount = TRANSITION_FRAME_COUNT,
+        )
+    }
+
+    private fun endTransition(gctx: GameContext) {
+        transitioning = false
+        attackCooldown = POST_TRANSITION_DELAY
     }
 
     private fun updateAttack(gctx: GameContext) {
@@ -96,7 +143,12 @@ class Boss(
     }
 
     fun decreaseLife(damage: Int) {
+        if (transitioning) return
+        val previousLife = life
         life -= damage
+        if (!phase2Triggered && previousLife > maxLife / 2 && life <= maxLife / 2 && life > 0) {
+            pendingTransition = true
+        }
     }
 
     companion object {
@@ -108,5 +160,10 @@ class Boss(
         private const val APPROACH_SPEED = 180f
         private const val COLLISION_INSET_RATIO = 0.75f
         private const val INITIAL_ATTACK_DELAY = 0.8f
+        private const val TRANSITION_DURATION = 1.0f
+        private const val TRANSITION_FPS = 8f
+        private const val TRANSITION_FRAME_COUNT = 8
+        private const val TRANSITION_VFX_SIZE = 1100f
+        private const val POST_TRANSITION_DELAY = 0.6f
     }
 }
