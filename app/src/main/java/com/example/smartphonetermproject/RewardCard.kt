@@ -15,6 +15,7 @@ object AttackStatCard : RewardCard() {
     override val effect = "x2"
     override fun apply(player: Player) {
         player.attackMul *= ATK_BOOST
+        player.gainAttackCard()
     }
 
     private const val ATK_BOOST = 2.0f
@@ -25,6 +26,7 @@ object FireRateStatCard : RewardCard() {
     override val effect = "+30%"
     override fun apply(player: Player) {
         player.fireRateMul *= RATE_BOOST
+        player.gainFireRateCard()
     }
 
     private const val RATE_BOOST = 1.3f
@@ -35,6 +37,7 @@ object CritRateStatCard : RewardCard() {
     override val effect = "+50%"
     override fun apply(player: Player) {
         player.critRate = (player.critRate + CRIT_BOOST).coerceAtMost(1f)
+        player.gainCritCard()
     }
 
     private const val CRIT_BOOST = 0.5f

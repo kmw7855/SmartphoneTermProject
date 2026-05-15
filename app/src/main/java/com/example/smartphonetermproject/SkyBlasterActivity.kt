@@ -9,5 +9,5 @@ class SkyBlasterActivity : BaseGameActivity() {
     override val drawsDebugInfo = BuildConfig.DEBUG
     override val drawsFpsGraph = false
 
-    override fun createRootScene(gctx: GameContext): Scene = BossScene(gctx)
+    override fun createRootScene(gctx: GameContext): Scene = MainScene(gctx)
 }

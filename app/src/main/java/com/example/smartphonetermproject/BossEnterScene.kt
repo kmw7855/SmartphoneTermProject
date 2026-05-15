@@ -82,7 +82,7 @@ class BossEntryScene(
 
     private fun onChooseBoss() {
         pop()
-        BossScene(gctx).change()
+        BossScene(gctx, mainScene.player, mainScene.score).change()
     }
 
     private fun onChooseStay() {

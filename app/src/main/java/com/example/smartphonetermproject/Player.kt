@@ -56,6 +56,36 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     var currentWeapon: Weapon = DefaultWeapon
     var weaponGrade: WeaponGrade = WeaponGrade.RARE
 
+    var attackCardCount = 0
+        private set
+    var fireRateCardCount = 0
+        private set
+    var critCardCount = 0
+        private set
+
+    fun gainAttackCard() { attackCardCount++ }
+    fun gainFireRateCard() { fireRateCardCount++ }
+    fun gainCritCard() { critCardCount++ }
+
+    fun copyStateFrom(other: Player) {
+        life = other.life
+        exp = other.exp
+        level = other.level
+        maxExp = other.maxExp
+        attackMul = other.attackMul
+        fireRateMul = other.fireRateMul
+        critRate = other.critRate
+        currentWeapon = other.currentWeapon
+        weaponGrade = other.weaponGrade
+        currentSkill = other.currentSkill
+        attackCardCount = other.attackCardCount
+        fireRateCardCount = other.fireRateCardCount
+        critCardCount = other.critCardCount
+        attackBuffMul = other.attackBuffMul
+        fireRateBuffMul = other.fireRateBuffMul
+        buffRemaining = other.buffRemaining
+    }
+
     fun gainExp(amount: Int) {
         exp += amount
     }
