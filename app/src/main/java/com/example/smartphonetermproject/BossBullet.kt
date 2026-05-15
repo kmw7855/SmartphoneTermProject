@@ -9,6 +9,8 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IRecyclable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.Sprite
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
 
 class BossBullet private constructor(
     private val gctx: GameContext,
@@ -19,14 +21,16 @@ class BossBullet private constructor(
         val width: Float,
         val height: Float,
         val damage: Int,
+        val collisionRatioX: Float = 0.3f,
+        val collisionRatioY: Float = 0.7f,
     ) {
         SHARD(R.mipmap.boss_bullet_4, 110f, 140f, 1),
         SCYTHE(R.mipmap.boss_bullet_3, 150f, 140f, 1),
         AIMED(R.mipmap.boss_bullet_1, 90f, 160f, 1),
-        CORE(R.mipmap.boss_bullet_2, 160f, 160f, 2),
+        CORE(R.mipmap.boss_bullet_2, 160f, 160f, 2, collisionRatioX = 0.5f, collisionRatioY = 0.5f),
     }
 
-    private enum class Move { STRAIGHT, QUAD_BEZIER }
+    private enum class Move { STRAIGHT, QUAD_BEZIER, SPRAYING }
 
     override var width = 0f
     override var height = 0f
@@ -49,6 +53,16 @@ class BossBullet private constructor(
     private var prevY = 0f
     private var spinDegPerSec = 0f
 
+    private var explodeOnExpire = false
+    private var expireDuration = 0f
+    private var expireElapsed = 0f
+    private var explodeShardCount = 0
+    private var explodeShardSpeed = 0f
+    private var explodeShardType: Type = Type.SHARD
+    private var sprayInterval = 0f
+    private var sprayIndex = 0
+    private var spraySubCooldown = 0f
+
     private lateinit var type: Type
     val damage: Int get() = type.damage
 
@@ -64,8 +78,8 @@ class BossBullet private constructor(
                 _collisionRect.setEmpty()
                 return _collisionRect
             }
-            val halfW = width * COLLISION_INSET_RATIO_X / 2f
-            val halfH = height * COLLISION_INSET_RATIO_Y / 2f
+            val halfW = width * type.collisionRatioX / 2f
+            val halfH = height * type.collisionRatioY / 2f
             _collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
             return _collisionRect
         }
@@ -92,10 +106,36 @@ class BossBullet private constructor(
         prevX = startX
         prevY = startY
         spinDegPerSec = 0f
+        explodeOnExpire = false
+        expireDuration = 0f
+        expireElapsed = 0f
         applyType(type)
         hitting = false
         hitTime = 0f
         syncDstRect()
+        return this
+    }
+
+    fun initExploding(
+        startX: Float, startY: Float,
+        vx: Float, vy: Float,
+        type: Type,
+        expireDurationSec: Float,
+        shardCount: Int,
+        shardSpeed: Float,
+        shardType: Type,
+        sprayIntervalSec: Float,
+    ): BossBullet {
+        init(startX, startY, vx, vy, type)
+        explodeOnExpire = true
+        expireDuration = expireDurationSec
+        expireElapsed = 0f
+        explodeShardCount = shardCount
+        explodeShardSpeed = shardSpeed
+        explodeShardType = shardType
+        sprayInterval = sprayIntervalSec
+        sprayIndex = 0
+        spraySubCooldown = 0f
         return this
     }
 
@@ -118,6 +158,9 @@ class BossBullet private constructor(
         prevX = startX
         prevY = startY
         this.spinDegPerSec = spinDegPerSec
+        explodeOnExpire = false
+        expireDuration = 0f
+        expireElapsed = 0f
         applyType(type)
         hitting = false
         hitTime = 0f
@@ -140,6 +183,17 @@ class BossBullet private constructor(
                 x += vx * gctx.frameTime
                 y += vy * gctx.frameTime
                 syncDstRect()
+                if (explodeOnExpire) {
+                    expireElapsed += gctx.frameTime
+                    if (expireElapsed >= expireDuration) {
+                        move = Move.SPRAYING
+                        vx = 0f
+                        vy = 0f
+                        sprayIndex = 0
+                        spraySubCooldown = 0f
+                        return
+                    }
+                }
                 val outBottom = y - height / 2f > gctx.metrics.height
                 val outTop = y + height / 2f < 0f
                 val outRight = x - width / 2f > gctx.metrics.width
@@ -148,6 +202,25 @@ class BossBullet private constructor(
                     val scene = gctx.scene as? MainScene ?: return
                     scene.world.remove(this, MainScene.Layer.ENEMY_BULLET)
                 }
+            }
+            Move.SPRAYING -> {
+                val scene = gctx.scene as? MainScene ?: return
+                spraySubCooldown -= gctx.frameTime
+                if (spraySubCooldown > 0f) return
+                if (sprayIndex >= explodeShardCount) {
+                    scene.world.remove(this, MainScene.Layer.ENEMY_BULLET)
+                    return
+                }
+                val angle = sprayIndex * 360f / explodeShardCount
+                val rad = Math.toRadians(angle.toDouble())
+                val svx = cos(rad).toFloat() * explodeShardSpeed
+                val svy = sin(rad).toFloat() * explodeShardSpeed
+                scene.world.add(
+                    BossBullet.get(gctx, x, y, svx, svy, explodeShardType),
+                    MainScene.Layer.ENEMY_BULLET,
+                )
+                sprayIndex++
+                spraySubCooldown = sprayInterval
             }
             Move.QUAD_BEZIER -> {
                 prevX = x; prevY = y
@@ -210,8 +283,6 @@ class BossBullet private constructor(
     override fun onRecycle() {}
 
     companion object {
-        private const val COLLISION_INSET_RATIO_X = 0.3f
-        private const val COLLISION_INSET_RATIO_Y = 0.7f
         private const val HIT_DURATION = 0.4f
         private const val HIT_FRAME_COUNT = 8
         private const val HIT_FPS = 20f
@@ -230,6 +301,25 @@ class BossBullet private constructor(
                 ?: return BossBullet(gctx).init(x, y, vx, vy, type)
             val bullet = scene.world.obtain(BossBullet::class.java) ?: BossBullet(gctx)
             return bullet.init(x, y, vx, vy, type)
+        }
+
+        fun getExploding(
+            gctx: GameContext,
+            x: Float,
+            y: Float,
+            vx: Float,
+            vy: Float,
+            type: Type,
+            expireDurationSec: Float,
+            shardCount: Int,
+            shardSpeed: Float,
+            shardType: Type,
+            sprayIntervalSec: Float,
+        ): BossBullet {
+            val scene = gctx.scene as? MainScene
+                ?: return BossBullet(gctx).initExploding(x, y, vx, vy, type, expireDurationSec, shardCount, shardSpeed, shardType, sprayIntervalSec)
+            val bullet = scene.world.obtain(BossBullet::class.java) ?: BossBullet(gctx)
+            return bullet.initExploding(x, y, vx, vy, type, expireDurationSec, shardCount, shardSpeed, shardType, sprayIntervalSec)
         }
 
         fun getBezier(

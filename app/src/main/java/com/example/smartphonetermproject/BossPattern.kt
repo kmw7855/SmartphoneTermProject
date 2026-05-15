@@ -41,6 +41,42 @@ sealed class BossPattern {
         private const val MUZZLE_Y_RATIO = 0.6f
     }
 
+    object CorePulse : BossPattern() {
+        override val cooldown: Float = COOLDOWN
+        override val burstCount: Int = 1
+        override val burstInterval: Float = 0f
+
+        override fun fireTick(gctx: GameContext, boss: Boss, scene: MainScene, tickIndex: Int) {
+            val muzzleX = boss.x
+            val muzzleY = boss.y + boss.height / 2f * MUZZLE_Y_RATIO
+            val targetX = gctx.metrics.width / 2f
+            val targetY = gctx.metrics.height / 2f
+            val vx = (targetX - muzzleX) / TRAVEL_TIME
+            val vy = (targetY - muzzleY) / TRAVEL_TIME
+            scene.world.add(
+                BossBullet.getExploding(
+                    gctx,
+                    muzzleX, muzzleY,
+                    vx, vy,
+                    BossBullet.Type.CORE,
+                    TRAVEL_TIME,
+                    SHARD_COUNT,
+                    SHARD_SPEED,
+                    BossBullet.Type.SHARD,
+                    SPRAY_INTERVAL,
+                ),
+                MainScene.Layer.ENEMY_BULLET,
+            )
+        }
+
+        private const val COOLDOWN = 4.5f
+        private const val TRAVEL_TIME = 1.3f
+        private const val SHARD_COUNT = 8
+        private const val SHARD_SPEED = 380f
+        private const val SPRAY_INTERVAL = 0.12f
+        private const val MUZZLE_Y_RATIO = 0.5f
+    }
+
     object AimedBurst : BossPattern() {
         override val cooldown: Float = COOLDOWN
         override val burstCount: Int = VOLLEY_COUNT
