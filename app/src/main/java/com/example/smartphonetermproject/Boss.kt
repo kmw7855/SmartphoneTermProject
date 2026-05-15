@@ -29,7 +29,11 @@ class Boss(
 
     private var attackCooldown = 0f
     private var patternIndex = 0
-    private val attackCycle: List<BossPattern> = listOf(BossPattern.CrownShard)
+    private val attackCycle: List<BossPattern> = listOf(BossPattern.EmperorScythe)
+    private var currentPattern: BossPattern? = null
+    private var burstTicksRemaining = 0
+    private var burstSubCooldown = 0f
+    private var burstTickIndex = 0
 
     init {
         syncDstRect()
@@ -58,12 +62,30 @@ class Boss(
     }
 
     private fun updateAttack(gctx: GameContext) {
+        val scene = gctx.scene as? MainScene ?: return
+
+        if (burstTicksRemaining > 0) {
+            burstSubCooldown -= gctx.frameTime
+            if (burstSubCooldown > 0f) return
+            val pattern = currentPattern ?: return
+            pattern.fireTick(gctx, this, scene, burstTickIndex)
+            burstTickIndex++
+            burstTicksRemaining--
+            burstSubCooldown = if (burstTicksRemaining > 0) pattern.burstInterval else 0f
+            if (burstTicksRemaining == 0) {
+                attackCooldown = pattern.cooldown
+                currentPattern = null
+            }
+            return
+        }
+
         attackCooldown -= gctx.frameTime
         if (attackCooldown > 0f) return
-        val scene = gctx.scene as? MainScene ?: return
         val pattern = attackCycle[patternIndex % attackCycle.size]
-        pattern.fire(gctx, this, scene)
-        attackCooldown = pattern.cooldown
+        currentPattern = pattern
+        burstTicksRemaining = pattern.burstCount
+        burstSubCooldown = 0f
+        burstTickIndex = 0
         patternIndex++
     }
 
