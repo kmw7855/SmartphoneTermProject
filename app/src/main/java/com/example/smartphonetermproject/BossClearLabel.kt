@@ -4,14 +4,16 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.view.MotionEvent
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IGameObject
+import kr.ac.tukorea.ge.spgp2026.a2dg.objects.ITouchable
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 
 class BossClearLabel(
     private val gctx: GameContext,
     private val boss: Boss,
     private val scene: MainScene,
-) : IGameObject {
+) : IGameObject, ITouchable {
     private val cx = gctx.metrics.width / 2f
     private val cy = gctx.metrics.height / 2f
 
@@ -59,6 +61,17 @@ class BossClearLabel(
 
     private val loadout = LoadoutCardsView(gctx)
 
+    private val lobbyButton = RoundRectButton(
+        gctx,
+        cx,
+        panelRect.top + LOBBY_BUTTON_OFFSET_FROM_TOP,
+        LOBBY_BUTTON_WIDTH,
+        LOBBY_BUTTON_HEIGHT,
+        "로비로 가기",
+        fillColor = Color.rgb(40, 90, 160),
+        strokeColor = Color.rgb(120, 180, 255),
+    ) { gctx.sceneStack.popAll() }
+
     override fun update(gctx: GameContext) {}
 
     override fun draw(canvas: Canvas) {
@@ -75,11 +88,18 @@ class BossClearLabel(
         canvas.drawText("SCORE  ${scene.score}", cx, lineY, scorePaint)
 
         loadout.draw(canvas, scene.player, cx, panelRect.top + CARD_ROW_TOP_OFFSET)
+
+        lobbyButton.draw(canvas)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!boss.dead) return false
+        return lobbyButton.onTouchEvent(event)
     }
 
     companion object {
         private const val PANEL_WIDTH = 820f
-        private const val PANEL_HEIGHT = 620f
+        private const val PANEL_HEIGHT = 780f
         private const val CORNER_RADIUS = 28f
         private const val TITLE_LABEL = "BOSS CLEAR!"
         private const val TITLE_TEXT_SIZE = 130f
@@ -87,5 +107,8 @@ class BossClearLabel(
         private const val TITLE_OFFSET_FROM_TOP = 140f
         private const val TITLE_TO_SCORE_GAP = 110f
         private const val CARD_ROW_TOP_OFFSET = 320f
+        private const val LOBBY_BUTTON_OFFSET_FROM_TOP = 660f
+        private const val LOBBY_BUTTON_WIDTH = 420f
+        private const val LOBBY_BUTTON_HEIGHT = 120f
     }
 }

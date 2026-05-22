@@ -23,7 +23,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     val dead: Boolean
         get() = life <= 0
 
-    var currentSkill: Skill? = ExplosionSkill
+    var currentSkill: Skill? = null
 
     var attackBuffMul = 1f
         private set
