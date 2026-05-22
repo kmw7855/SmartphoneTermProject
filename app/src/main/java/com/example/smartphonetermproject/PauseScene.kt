@@ -3,6 +3,7 @@ package com.example.smartphonetermproject
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.DrawableSprite
 import kr.ac.tukorea.ge.spgp2026.a2dg.objects.IGameObject
@@ -11,9 +12,12 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.scene.World
 import kr.ac.tukorea.ge.spgp2026.a2dg.util.LabelUtil
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 
-class PauseScene(gctx: GameContext) : Scene(gctx) {
+class PauseScene(
+    gctx: GameContext,
+    private val source: MainScene,
+) : Scene(gctx) {
 
-    enum class Layer { BG, TITLE, TOUCH }
+    enum class Layer { BG, CONTENT, TOUCH }
 
     override val isTransparent = true
     override val clipsRect = true
@@ -37,7 +41,7 @@ class PauseScene(gctx: GameContext) : Scene(gctx) {
             },
             Layer.BG,
         )
-        add(TitleLabel(), Layer.TITLE)
+        add(PauseContent(), Layer.CONTENT)
         add(
             RoundRectButton(
                 gctx,
@@ -68,24 +72,33 @@ class PauseScene(gctx: GameContext) : Scene(gctx) {
         return world.objectsAt(Layer.TOUCH)
     }
 
-    private inner class TitleLabel : IGameObject {
-        private val label = LabelUtil(TITLE_TEXT_SIZE, Color.WHITE, Paint.Align.CENTER)
+    private inner class PauseContent : IGameObject {
+        private val titleLabel = LabelUtil(TITLE_TEXT_SIZE, Color.WHITE, Paint.Align.CENTER, Typeface.DEFAULT_BOLD)
+        private val scoreLabel = LabelUtil(SCORE_TEXT_SIZE, Color.WHITE, Paint.Align.CENTER, Typeface.DEFAULT_BOLD)
+        private val loadout = LoadoutCardsView(gctx)
         private val titleY = panelTop + TITLE_OFFSET_FROM_TOP
+        private val scoreY = panelTop + SCORE_OFFSET_FROM_TOP
+        private val cardsTopY = panelTop + CARDS_OFFSET_FROM_TOP
 
         override fun update(gctx: GameContext) {}
 
         override fun draw(canvas: Canvas) {
-            label.draw(canvas, "일시정지", cx, titleY)
+            titleLabel.draw(canvas, "일시정지", cx, titleY)
+            scoreLabel.draw(canvas, "SCORE  ${source.score}", cx, scoreY)
+            loadout.draw(canvas, source.player, cx, cardsTopY)
         }
     }
 
     companion object {
-        private const val PANEL_WIDTH = 620f
-        private const val PANEL_HEIGHT = 560f
-        private const val TITLE_TEXT_SIZE = 96f
-        private const val TITLE_OFFSET_FROM_TOP = 170f
-        private const val RESUME_OFFSET_FROM_TOP = 320f
-        private const val EXIT_OFFSET_FROM_TOP = 470f
+        private const val PANEL_WIDTH = 840f
+        private const val PANEL_HEIGHT = 860f
+        private const val TITLE_TEXT_SIZE = 88f
+        private const val SCORE_TEXT_SIZE = 60f
+        private const val TITLE_OFFSET_FROM_TOP = 110f
+        private const val SCORE_OFFSET_FROM_TOP = 210f
+        private const val CARDS_OFFSET_FROM_TOP = 270f
+        private const val RESUME_OFFSET_FROM_TOP = 590f
+        private const val EXIT_OFFSET_FROM_TOP = 740f
         private const val BUTTON_WIDTH = 380f
         private const val BUTTON_HEIGHT = 130f
     }

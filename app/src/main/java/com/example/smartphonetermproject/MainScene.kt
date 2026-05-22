@@ -66,7 +66,7 @@ open class MainScene(
         radius = SKILL_BUTTON_RADIUS,
     )
 
-    private val pauseButton = PauseButton(gctx) { PauseScene(gctx).push() }
+    private val pauseButton = PauseButton(gctx) { PauseScene(gctx, this@MainScene).push() }
 
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
@@ -171,7 +171,7 @@ open class MainScene(
     }
 
     override fun onBackPressed(): Boolean {
-        PauseScene(gctx).push()
+        PauseScene(gctx, this).push()
         return true
     }
 
