@@ -11,6 +11,7 @@ open class MainScene(
     gctx: GameContext,
     backgroundResId: Int = R.mipmap.sky_bg,
     val isBossStage: Boolean = false,
+    private val bgmResId: Int = R.raw.normalstage,
 ) : Scene(gctx) {
     enum class Layer {
         BACKGROUND,
@@ -173,6 +174,25 @@ open class MainScene(
     override fun onBackPressed(): Boolean {
         PauseScene(gctx, this).push()
         return true
+    }
+
+    override fun onEnter() {
+        gctx.res.sound.playMusic(bgmResId)
+    }
+
+    override fun onExit() {
+        gctx.res.sound.stopMusic()
+        Sfx.stopBuffLoop()
+    }
+
+    override fun onPause() {
+        gctx.res.sound.pauseMusic()
+        Sfx.pauseBuffLoop()
+    }
+
+    override fun onResume() {
+        gctx.res.sound.resumeMusic()
+        Sfx.resumeBuffLoop()
     }
 
     override val clipsRect = true

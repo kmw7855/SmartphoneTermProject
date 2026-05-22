@@ -24,6 +24,7 @@ object DefaultWeapon : Weapon() {
     override val cardSpriteResId = R.mipmap.bullet_placeholder
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
+        Sfx.playShot(gctx)
         val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
         val (power, isCrit) = player.calculatePower()
         scene.world.add(
@@ -39,6 +40,7 @@ object ShotgunWeapon : Weapon() {
     override val cardSpriteResId = R.mipmap.weapon_shotgun
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
+        Sfx.playShot(gctx)
         val pelletCount = if (grade == WeaponGrade.EPIC) 5 else 3
         val totalSpreadDeg = if (grade == WeaponGrade.EPIC) 40f else 30f
         val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
@@ -67,6 +69,7 @@ object HomingWeapon : Weapon() {
     override val cardSpriteResId = R.mipmap.weapon_homing
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
+        Sfx.playShot(gctx)
         val HomingCount = if (grade == WeaponGrade.EPIC) 2 else 1
         val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
         val (power, isCrit) = player.calculatePower()
@@ -97,6 +100,7 @@ object LaserWeapon : Weapon() {
     override val cardSpriteResId = R.mipmap.weapon_laser
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {
+        Sfx.playLaser(gctx)
         val beamHalf = if (grade == WeaponGrade.EPIC) 150f else 60f
         val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
         scene.world.add(

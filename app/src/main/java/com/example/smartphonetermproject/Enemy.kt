@@ -234,6 +234,7 @@ class Enemy private constructor(
     fun startDying(scene: MainScene) {
         if (dying) return
         dying = true
+        Sfx.playEnemyDie(gctx)
         dyingTime = DIE_DURATION
         updateCollisionRect()
         if (type != Type.SPLIT) {

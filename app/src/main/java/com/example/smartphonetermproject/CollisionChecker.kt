@@ -117,6 +117,7 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
             val orb = orbObject as? ExpOrb ?: return@forEachReversedAt
             if (orb.collidesWith(player)) {
                 player.gainExp(scene.expPerOrb())
+                Sfx.playExpGain(gctx)
                 scene.world.remove(orb, MainScene.Layer.EXP_ORB)
             }
         }

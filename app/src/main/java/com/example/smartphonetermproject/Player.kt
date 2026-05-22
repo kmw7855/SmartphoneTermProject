@@ -23,7 +23,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     val dead: Boolean
         get() = life <= 0
 
-    var currentSkill: Skill? = null
+    var currentSkill: Skill? = ExplosionSkill
 
     var attackBuffMul = 1f
         private set
@@ -112,6 +112,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         attackBuffMul = attackMul
         fireRateBuffMul = fireRateMul
         buffRemaining = duration
+        Sfx.startBuffLoop(gctx)
     }
 
     private fun tickBuff(gctx: GameContext) {
@@ -121,6 +122,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
             buffRemaining = 0f
             attackBuffMul = 1f
             fireRateBuffMul = 1f
+            Sfx.stopBuffLoop()
         }
     }
 
@@ -165,6 +167,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
 
     fun decreaseLife(damage: Int) {
         life -= damage
+        Sfx.playPlayerHit(gctx)
     }
 
     fun onTouchEvent(event: MotionEvent): Boolean {

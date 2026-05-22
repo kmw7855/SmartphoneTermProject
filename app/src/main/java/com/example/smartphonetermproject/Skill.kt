@@ -33,6 +33,7 @@ object ExplosionSkill : Skill(
     private const val Y_OFFSET_UP = 700f
 
     override fun activate(player: Player, scene: MainScene) {
+        Sfx.playExplosion(player.gctx)
         val cx = player.x
         val cy = player.y - Y_OFFSET_UP
         scene.applyAreaDamage(cx, cy, RADIUS, DAMAGE)
@@ -58,6 +59,7 @@ object HealSkill : Skill(
     override fun canActivate(player: Player): Boolean = player.life < player.maxLife
 
     override fun activate(player: Player, scene: MainScene) {
+        Sfx.playHeal(player.gctx)
         player.heal(HEAL_AMOUNT)
         scene.spawnVfx(
             resId = R.mipmap.skill_heal,

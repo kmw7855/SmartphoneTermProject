@@ -6,7 +6,7 @@ class BossScene(
     gctx: GameContext,
     sourcePlayer: Player? = null,
     sourceScore: Int = 0,
-) : MainScene(gctx, R.mipmap.boss_bg, isBossStage = true) {
+) : MainScene(gctx, R.mipmap.boss_bg, isBossStage = true, bgmResId = R.raw.mainstage) {
 
     val boss = Boss(gctx)
 

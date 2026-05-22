@@ -23,21 +23,39 @@ class Sound(
     // 그래서 applicationContext 를 저장해 앱 전체 생명주기에 맞춰 사용한다.
     private val appContext = context.applicationContext
     private var mediaPlayer: MediaPlayer? = null
+    private var musicResId = 0
     private var soundPool: SoundPool? = null
     private val soundIds = mutableMapOf<Int, Int>()
 
     fun playMusic(resId: Int) {
         stopMusic()
-        mediaPlayer = MediaPlayer.create(appContext, resId).apply {
+        musicResId = resId
+        mediaPlayer = createMusicPlayer(resId)
+    }
+
+    private fun createMusicPlayer(resId: Int): MediaPlayer? {
+        return MediaPlayer.create(appContext, resId)?.apply {
             isLooping = true
+            setOnErrorListener { _, _, _ ->
+                recoverMusic()
+                true
+            }
             start()
         }
+    }
+
+    private fun recoverMusic() {
+        val resId = musicResId
+        val dead = mediaPlayer
+        mediaPlayer = if (resId != 0) createMusicPlayer(resId) else null
+        dead?.release()
     }
 
     fun stopMusic() {
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+        musicResId = 0
     }
 
     fun pauseMusic() {
@@ -48,12 +66,17 @@ class Sound(
         mediaPlayer?.start()
     }
 
-    fun playEffect(resId: Int) {
+    fun preload(resId: Int) {
+        if (soundIds.containsKey(resId)) return
+        soundIds[resId] = getSoundPool().load(appContext, resId, PRIORITY)
+    }
+
+    fun playEffect(resId: Int, volume: Float = VOLUME) {
         val pool = getSoundPool()
         val soundId = soundIds[resId] ?: pool.load(appContext, resId, PRIORITY).also {
             soundIds[resId] = it
         }
-        pool.play(soundId, VOLUME, VOLUME, PRIORITY, NO_LOOP, NORMAL_RATE)
+        pool.play(soundId, volume, volume, PRIORITY, NO_LOOP, NORMAL_RATE)
     }
 
     fun release() {
