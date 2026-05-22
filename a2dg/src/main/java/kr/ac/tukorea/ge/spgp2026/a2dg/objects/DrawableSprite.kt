@@ -13,15 +13,13 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
 // 나중에 Sprite 계열 객체가 내부에 DrawableSprite 를 has-a 로 들고,
 // 배경이나 강조 효과 그리기만 위임하는 구조로 확장할 수도 있다.
 class DrawableSprite(
-    drawable: Drawable,
+    val drawable: Drawable,
 ) : IGameObject {
     private val dstRect = RectF()
     private var x = 0f
     private var y = 0f
     private var width = 0f
     private var height = 0f
-    val drawable = drawable
-        private set
 
     override fun update(gctx: GameContext) {
     }

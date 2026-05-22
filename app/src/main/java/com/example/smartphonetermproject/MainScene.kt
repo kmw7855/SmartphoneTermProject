@@ -25,6 +25,7 @@ open class MainScene(
         VFX,
         UI,
         SKILL_BUTTON,
+        PAUSE_BUTTON,
     }
 
     private val background = VertScrollBackground(gctx, backgroundResId, BACKGROUND_SPEED)
@@ -65,6 +66,8 @@ open class MainScene(
         radius = SKILL_BUTTON_RADIUS,
     )
 
+    private val pauseButton = PauseButton(gctx) { PauseScene(gctx).push() }
+
     override val world = World(Layer.entries.toTypedArray()).apply {
         add(background, Layer.BACKGROUND)
         add(player, Layer.PLAYER)
@@ -77,6 +80,7 @@ open class MainScene(
         add(expLabel, Layer.UI)
         add(debugStatLabel, Layer.UI)
         add(skillButton, Layer.SKILL_BUTTON)
+        add(pauseButton, Layer.PAUSE_BUTTON)
     }
 
     override fun update(gctx: GameContext) {
@@ -158,12 +162,17 @@ open class MainScene(
     }
 
     override fun touchObjects(): List<IGameObject> {
-        return world.objectsAt(Layer.SKILL_BUTTON)
+        return world.objectsAt(Layer.SKILL_BUTTON) + world.objectsAt(Layer.PAUSE_BUTTON)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (super.onTouchEvent(event)) return true
         return player.onTouchEvent(event)
+    }
+
+    override fun onBackPressed(): Boolean {
+        PauseScene(gctx).push()
+        return true
     }
 
     override val clipsRect = true
