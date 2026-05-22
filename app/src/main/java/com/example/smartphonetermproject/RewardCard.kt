@@ -88,9 +88,10 @@ class CardPool {
         SkillCard(BuffSkill),
     )
 
-    fun pickThree(currentSkill: Skill?): List<RewardCard> {
+    fun pickThree(currentSkill: Skill?, critMaxed: Boolean): List<RewardCard> {
         val availableSkillCards = skillCards.filter { it.skill !== currentSkill }
-        val pool = (statCards + weaponCards + availableSkillCards).toMutableList()
+        val availableStatCards = if (critMaxed) statCards.filter { it !== CritRateStatCard } else statCards
+        val pool = (availableStatCards + weaponCards + availableSkillCards).toMutableList()
         val result = mutableListOf<RewardCard>()
         while (result.size < 3 && pool.isNotEmpty()) {
             val byGrade = pool.groupBy { it.grade }
