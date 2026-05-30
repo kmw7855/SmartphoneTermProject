@@ -4,22 +4,47 @@
     android:layout_height="match_parent"
     android:background="@mipmap/title_bg">
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
-        android:layout_marginTop="120dp"
-        android:text="SKY BLASTER"
-        android:textColor="#FFFFFF"
-        android:textSize="48sp"
-        android:textStyle="bold" />
-
-    <Button
-        android:id="@+id/btnStart"
-        android:layout_width="200dp"
-        android:layout_height="80dp"
         android:layout_gravity="center"
-        android:text="GAME START"
-        android:textSize="22sp"
-        android:onClick="onStartGameClicked"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:background="@drawable/title_panel"
+        android:paddingStart="64dp"
+        android:paddingEnd="64dp"
+        android:paddingTop="56dp"
+        android:paddingBottom="56dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:text="SKY BLASTER"
+            android:textColor="#EAF6FF"
+            android:textSize="56sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:shadowColor="#FF78B4FF"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="16" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnStart"
+            android:layout_width="280dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="56dp"
+            android:background="@drawable/title_start_button"
+            android:backgroundTint="@null"
+            android:text="GAME START"
+            android:textColor="#EAF6FF"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            android:letterSpacing="0.1"
+            android:stateListAnimator="@null"
+            android:onClick="onStartGameClicked" />
+    </LinearLayout>
 </FrameLayout>
