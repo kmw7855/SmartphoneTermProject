@@ -1,6 +1,5 @@
 package com.example.smartphonetermproject
 
-import android.app.Activity
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -145,7 +144,8 @@ class CollisionChecker(private val gctx: GameContext) : IGameObject {
 
     private fun triggerGameOver() {
         gameOverTriggered = true
-        (gctx.view.context as? Activity)?.finish()
+        val scene = gctx.scene as? MainScene ?: return
+        GameOverScene(gctx, scene).push()
     }
 
     companion object {
