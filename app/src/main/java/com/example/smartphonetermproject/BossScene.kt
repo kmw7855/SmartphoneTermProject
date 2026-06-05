@@ -10,14 +10,19 @@ class BossScene(
 ) : MainScene(gctx, R.mipmap.boss_bg, isBossStage = true, bgmResId = R.raw.mainstage) {
 
     val boss = Boss(gctx)
+    private val bossHpHud = BossHpHud(gctx, boss)
     private val clearLabel = BossClearLabel(gctx, boss, this)
 
     init {
         sourcePlayer?.let { player.copyStateFrom(it) }
         if (sourceScore > 0) addScore(sourceScore)
-        world.add(boss, Layer.ENEMY)
-        world.add(BossHpHud(gctx, boss), Layer.UI)
         world.add(clearLabel, Layer.UI)
+        world.add(BossWarning(gctx) { spawnBoss() }, Layer.UI)
+    }
+
+    private fun spawnBoss() {
+        world.add(boss, Layer.ENEMY)
+        world.add(bossHpHud, Layer.UI)
     }
 
     override fun touchObjects(): List<IGameObject> {
