@@ -5,7 +5,9 @@ import kr.ac.tukorea.ge.spgp2026.a2dg.objects.VertScrollBackground
 import kr.ac.tukorea.ge.spgp2026.a2dg.scene.Scene
 import kr.ac.tukorea.ge.spgp2026.a2dg.scene.World
 import kr.ac.tukorea.ge.spgp2026.a2dg.view.GameContext
+import android.graphics.Canvas
 import android.view.MotionEvent
+import kotlin.random.Random
 
 open class MainScene(
     gctx: GameContext,
@@ -38,6 +40,34 @@ open class MainScene(
         private set
     private var bossPromptPending = false
     private var nextPromptAt = BOSS_ENTER_TIME
+
+    private var hitstopRemaining = 0f
+    private var shakeRemaining = 0f
+    private var shakeOffsetX = 0f
+    private var shakeOffsetY = 0f
+
+    fun triggerHitstop() {
+        hitstopRemaining = HITSTOP_DURATION
+        shakeRemaining = SHAKE_DURATION
+    }
+
+    private fun updateShake(gctx: GameContext) {
+        if (shakeRemaining <= 0f) {
+            shakeOffsetX = 0f
+            shakeOffsetY = 0f
+            return
+        }
+        shakeRemaining -= gctx.frameTime
+        if (shakeRemaining <= 0f) {
+            shakeRemaining = 0f
+            shakeOffsetX = 0f
+            shakeOffsetY = 0f
+            return
+        }
+        val amp = SHAKE_MAGNITUDE * (shakeRemaining / SHAKE_DURATION)
+        shakeOffsetX = (Random.nextFloat() * 2f - 1f) * amp
+        shakeOffsetY = (Random.nextFloat() * 2f - 1f) * amp
+    }
 
     private val enemyGenerator = EnemyGenerator(gctx)
     private val collisionChecker = CollisionChecker(gctx)
@@ -85,6 +115,12 @@ open class MainScene(
     }
 
     override fun update(gctx: GameContext) {
+        if (hitstopRemaining > 0f) {
+            hitstopRemaining -= gctx.frameTime
+            updateShake(gctx)
+            return
+        }
+        updateShake(gctx)
         super.update(gctx)
 
         if (player.exp >= player.maxExp) {
@@ -196,11 +232,28 @@ open class MainScene(
         Sfx.resumeBuffLoop()
     }
 
+    override fun draw(canvas: Canvas) {
+        if (shakeRemaining <= 0f) {
+            super.draw(canvas)
+            return
+        }
+        val scale = 1f + SHAKE_ZOOM * (shakeRemaining / SHAKE_DURATION)
+        val save = canvas.save()
+        canvas.scale(scale, scale, gctx.metrics.width / 2f, gctx.metrics.height / 2f)
+        canvas.translate(shakeOffsetX, shakeOffsetY)
+        super.draw(canvas)
+        canvas.restoreToCount(save)
+    }
+
     override val clipsRect = true
 
     companion object {
         private const val BACKGROUND_SPEED = 80f
         private const val BOSS_ENTER_TIME = 15f
+        private const val HITSTOP_DURATION = 0.06f
+        private const val SHAKE_DURATION = 0.18f
+        private const val SHAKE_MAGNITUDE = 18f
+        private const val SHAKE_ZOOM = 0.05f
         private const val STARS_SPEED = 150f
         private const val SKILL_BUTTON_RADIUS = 60f
         private const val SKILL_BUTTON_MARGIN_RIGHT = 90f

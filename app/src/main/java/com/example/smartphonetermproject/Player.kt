@@ -168,6 +168,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
     fun decreaseLife(damage: Int) {
         life -= damage
         Sfx.playPlayerHit(gctx)
+        (gctx.scene as? MainScene)?.triggerHitstop()
     }
 
     fun onTouchEvent(event: MotionEvent): Boolean {
