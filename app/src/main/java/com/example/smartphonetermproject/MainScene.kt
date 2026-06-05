@@ -138,6 +138,7 @@ open class MainScene(
         world.forEachReversedAt(Layer.ENEMY) { obj ->
             when (obj) {
                 is Enemy -> {
+                    if (obj.dead) return@forEachReversedAt
                     val dx = obj.x - centerX
                     val dy = obj.y - centerY
                     if (dx * dx + dy * dy > r2) return@forEachReversedAt

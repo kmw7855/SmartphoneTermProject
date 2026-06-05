@@ -16,7 +16,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
 
     override val collisionRect = RectF()
 
-    var life = TEST_INITIAL_LIFE
+    var life = MAX_LIFE
         private set
     val maxLife: Int
         get() = MAX_LIFE
@@ -187,7 +187,6 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         const val PLAYER_WIDTH = 200f
         const val PLAYER_HEIGHT = 200f
         const val MAX_LIFE = 10
-        private const val TEST_INITIAL_LIFE = 4
         private const val COLLISION_INSET_RATIO = 0.6f
         const val BULLET_OFFSET = 8f
         private const val LEVEL_UP_EXP_BASE = 3
