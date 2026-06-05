@@ -187,7 +187,7 @@ open class MainScene(
                     onHit?.invoke(obj.x, obj.y)
                 }
                 is Boss -> {
-                    if (obj.dead) return@forEachReversedAt
+                    if (obj.dead || !obj.vulnerable) return@forEachReversedAt
                     val dx = obj.x - centerX
                     val dy = obj.y - centerY
                     if (dx * dx + dy * dy > r2) return@forEachReversedAt

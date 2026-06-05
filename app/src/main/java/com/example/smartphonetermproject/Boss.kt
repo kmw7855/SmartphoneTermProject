@@ -25,6 +25,8 @@ class Boss(
 
     var phase: Phase = Phase.APPROACHING
         private set
+    val vulnerable: Boolean
+        get() = phase == Phase.ATTACKING && !transitioning
     private val stopY = gctx.metrics.height * STOP_RATIO
 
     private var attackCooldown = 0f
@@ -153,13 +155,17 @@ class Boss(
     }
 
     private fun updateCollisionRect() {
+        if (!vulnerable) {
+            collisionRect.setEmpty()
+            return
+        }
         val halfW = width * COLLISION_INSET_RATIO / 2f
         val halfH = height * COLLISION_INSET_RATIO / 2f
         collisionRect.set(x - halfW, y - halfH, x + halfW, y + halfH)
     }
 
     fun decreaseLife(damage: Int) {
-        if (transitioning) return
+        if (!vulnerable) return
         val previousLife = life
         life -= damage
         if (!phase2Triggered && previousLife > maxLife / 2 && life <= maxLife / 2 && life > 0) {
