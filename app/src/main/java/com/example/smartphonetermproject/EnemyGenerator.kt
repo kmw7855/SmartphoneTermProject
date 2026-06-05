@@ -44,7 +44,7 @@ class EnemyGenerator(private val gctx: GameContext) : IGameObject {
     override fun draw(canvas: Canvas) {}
 
     companion object {
-        const val GEN_INTERVAL = 1.0f
+        const val GEN_INTERVAL = 1.4f
 
         private const val SUICIDE_BASE_WEIGHT = 1f
 

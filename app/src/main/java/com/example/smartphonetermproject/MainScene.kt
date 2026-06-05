@@ -106,7 +106,7 @@ open class MainScene(
         nextPromptAt += BOSS_ENTER_TIME
     }
 
-    fun spawnRateMul(): Float = (1f + elapsedSec / 10f).coerceAtMost(SPAWN_RATE_MAX)
+    fun spawnRateMul(): Float = (1f + elapsedSec / 15f).coerceAtMost(SPAWN_RATE_MAX)
     fun enemyStatMul(): Float = (1f + elapsedSec / 15f).coerceAtMost(ENEMY_STAT_MAX)
     fun expPerOrb(): Int = (elapsedSec / EXP_STEP_SEC).toInt() + 1
 

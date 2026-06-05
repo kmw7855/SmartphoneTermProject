@@ -171,7 +171,7 @@ class Boss(
         const val HIT_DAMAGE = 5
         private const val BOSS_WIDTH = 540f
         private const val BOSS_HEIGHT = 540f
-        private const val MAX_LIFE = 300
+        private const val MAX_LIFE = 1000
         private const val STOP_RATIO = 0.22f
         private const val APPROACH_SPEED = 180f
         private const val COLLISION_INSET_RATIO = 0.75f

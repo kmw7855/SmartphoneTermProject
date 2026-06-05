@@ -45,6 +45,7 @@ object ShotgunWeapon : Weapon() {
         val totalSpreadDeg = if (grade == WeaponGrade.EPIC) 40f else 30f
         val muzzleY = player.y - Player.PLAYER_HEIGHT / 2f - Player.BULLET_OFFSET
         val (power, isCrit) = player.calculatePower()
+        val pelletPower = (power * PELLET_DAMAGE_MUL).toInt().coerceAtLeast(1)
 
         val startAngle = -totalSpreadDeg / 2f
         val step = if (pelletCount > 1) totalSpreadDeg / (pelletCount - 1) else 0f
@@ -53,7 +54,7 @@ object ShotgunWeapon : Weapon() {
             val vx = sin(rad).toFloat() * Bullet.SPEED
             val vy = -cos(rad).toFloat() * Bullet.SPEED
             val pellet = Bullet.get(
-                gctx, player.x, muzzleY, power, isCrit,
+                gctx, player.x, muzzleY, pelletPower, isCrit,
                 vx, vy,
                 R.mipmap.weapon_shotgun,
                 R.mipmap.vfx_shotgun_hit,
@@ -61,6 +62,8 @@ object ShotgunWeapon : Weapon() {
             scene.world.add(pellet, MainScene.Layer.BULLET)
         }
     }
+
+    private const val PELLET_DAMAGE_MUL = 0.6f
 }
 
 object HomingWeapon : Weapon() {

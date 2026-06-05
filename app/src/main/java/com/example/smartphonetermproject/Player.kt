@@ -186,7 +186,7 @@ class Player(val gctx: GameContext) : Sprite(gctx, R.mipmap.player_placeholder),
         const val SPEED = 1100f
         const val PLAYER_WIDTH = 200f
         const val PLAYER_HEIGHT = 200f
-        const val MAX_LIFE = 10
+        const val MAX_LIFE = 20
         private const val COLLISION_INSET_RATIO = 0.6f
         const val BULLET_OFFSET = 8f
         private const val LEVEL_UP_EXP_BASE = 3
