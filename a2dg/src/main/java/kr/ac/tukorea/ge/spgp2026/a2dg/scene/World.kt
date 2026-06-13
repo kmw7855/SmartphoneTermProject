@@ -175,7 +175,7 @@ open class World<TLayer>(
     }
 
     protected fun drawDebugBoxes(canvas: Canvas) {
-        if (!GameView.drawsDebugInfo) return
+        if (!GameView.drawsCollisionBoxes) return
 
         var layerIndex = 0
         while (layerIndex < orderedLayers.size) {

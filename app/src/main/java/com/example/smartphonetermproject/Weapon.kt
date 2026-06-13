@@ -20,7 +20,7 @@ sealed class Weapon {
 
 object DefaultWeapon : Weapon() {
     override val displayName = "직진"
-    override val fireInterval = 0.3f
+    override val fireInterval = 0.6f
     override val cardSpriteResId = R.mipmap.bullet_placeholder
 
     override fun fire(player: Player, scene: MainScene, gctx: GameContext, grade: WeaponGrade) {

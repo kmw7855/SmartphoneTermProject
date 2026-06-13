@@ -12,13 +12,13 @@ sealed class RewardCard {
 
 object AttackStatCard : RewardCard() {
     override val title = "공격력"
-    override val effect = "x1.5"
+    override val effect = "x1.3"
     override fun apply(player: Player) {
         player.attackMul *= ATK_BOOST
         player.gainAttackCard()
     }
 
-    private const val ATK_BOOST = 1.5f
+    private const val ATK_BOOST = 1.3f
 }
 
 object FireRateStatCard : RewardCard() {

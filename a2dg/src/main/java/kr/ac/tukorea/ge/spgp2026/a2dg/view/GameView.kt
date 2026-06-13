@@ -47,6 +47,7 @@ class GameView @JvmOverloads constructor(
         var drawsDebugGrid = true
         var drawsDebugInfo = true
         var drawsFpsGraph = true
+        var drawsCollisionBoxes = false
     }
 
     init {
